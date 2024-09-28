@@ -22,7 +22,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.literegenmeter;
+package net.runelite.client.plugins.literegenmeter.src.main.java.com.literegenmeter;
 
 import net.runelite.api.Client;
 import net.runelite.api.annotations.Component;
