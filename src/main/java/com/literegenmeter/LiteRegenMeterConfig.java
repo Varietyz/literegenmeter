@@ -22,20 +22,45 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.literegenmeter;
+package net.runelite.client.plugins.literegenmeter;
 
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.Units;
+import java.awt.Color;
+import net.runelite.client.config.Alpha;
 
 @ConfigGroup("regenmeter")
 public interface LiteRegenMeterConfig extends Config
 {
+	@Alpha
+	@ConfigItem(
+			keyName = "hitpointsColor",
+			name = "Hitpoints Bar Color",
+			description = "Color of the hitpoints regeneration bar."
+	)
+	default Color getHitpointsColor()
+	{
+		return Color.RED; // Default color
+	}
+
+	@Alpha
+	@ConfigItem(
+			keyName = "specialColor",
+			name = "Special Attack Bar Color",
+			description = "Color of the special attack regeneration bar."
+	)
+	default Color getSpecialColor()
+	{
+		return Color.CYAN; // Default color
+	}
+
 	@ConfigItem(
 			keyName = "showHitpoints",
 			name = "Display Hitpoints Regen",
-			description = "Enables a regeneration bar below the hitpoints orb to indicate hitpoint recovery.")
+			description = "Enables a regeneration bar below the hitpoints orb to indicate hitpoint recovery."
+	)
 	default boolean showHitpoints()
 	{
 		return true;
@@ -44,7 +69,8 @@ public interface LiteRegenMeterConfig extends Config
 	@ConfigItem(
 			keyName = "showSpecial",
 			name = "Display Spec. Attack Regen",
-			description = "Enables a regeneration bar below the Special Attack orb to indicate special attack recovery.")
+			description = "Enables a regeneration bar below the Special Attack orb to indicate special attack recovery."
+	)
 	default boolean showSpecial()
 	{
 		return true;
@@ -53,7 +79,8 @@ public interface LiteRegenMeterConfig extends Config
 	@ConfigItem(
 			keyName = "showWhenNoChange",
 			name = "Always Show Hitpoints Regen",
-			description = "Displays the hitpoints regeneration bar even when the hitpoints are full and there is no change.")
+			description = "Displays the hitpoints regeneration bar even when the hitpoints are full and there is no change."
+	)
 	default boolean showWhenNoChange()
 	{
 		return false;

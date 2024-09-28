@@ -22,7 +22,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.literegenmeter;
+package net.runelite.client.plugins.literegenmeter;
 
 import net.runelite.api.Client;
 import net.runelite.api.annotations.Component;
@@ -70,16 +70,21 @@ class LiteRegenMeterOverlay extends Overlay
 
 		if (config.showHitpoints())
 		{
-			renderRegen(g, ComponentID.MINIMAP_HEALTH_ORB, plugin.getHitpointsPercentage(), HITPOINTS_COLOR);
+			// Use user-configured color for hitpoints bar
+			Color hitpointsColor = config.getHitpointsColor();
+			renderRegen(g, ComponentID.MINIMAP_HEALTH_ORB, plugin.getHitpointsPercentage(), hitpointsColor);
 		}
 
 		if (config.showSpecial())
 		{
-			renderRegen(g, ComponentID.MINIMAP_SPEC_ORB, plugin.getSpecialPercentage(), SPECIAL_COLOR);
+			// Use user-configured color for special attack bar
+			Color specialColor = config.getSpecialColor();
+			renderRegen(g, ComponentID.MINIMAP_SPEC_ORB, plugin.getSpecialPercentage(), specialColor);
 		}
 
 		return null;
 	}
+
 
 	private void renderRegen(Graphics2D g, @Component int componentId, double percent, Color color)
 	{
