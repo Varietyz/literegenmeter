@@ -34,32 +34,11 @@ import net.runelite.client.config.Alpha;
 @ConfigGroup("regenmeter")
 public interface LiteRegenMeterConfig extends Config
 {
-	@Alpha
-	@ConfigItem(
-			keyName = "hitpointsColor",
-			name = "Hitpoints Bar Color",
-			description = "Color of the hitpoints regeneration bar."
-	)
-	default Color getHitpointsColor()
-	{
-		return Color.RED; // Default color
-	}
-
-	@Alpha
-	@ConfigItem(
-			keyName = "specialColor",
-			name = "Special Attack Bar Color",
-			description = "Color of the special attack regeneration bar."
-	)
-	default Color getSpecialColor()
-	{
-		return Color.CYAN; // Default color
-	}
-
 	@ConfigItem(
 			keyName = "showHitpoints",
 			name = "Display Hitpoints Regen",
-			description = "Enables a regeneration bar below the hitpoints orb to indicate hitpoint recovery."
+			description = "Enables a regeneration bar below the hitpoints orb to indicate hitpoint recovery.",
+			position = 0
 	)
 	default boolean showHitpoints()
 	{
@@ -67,19 +46,10 @@ public interface LiteRegenMeterConfig extends Config
 	}
 
 	@ConfigItem(
-			keyName = "showSpecial",
-			name = "Display Spec. Attack Regen",
-			description = "Enables a regeneration bar below the Special Attack orb to indicate special attack recovery."
-	)
-	default boolean showSpecial()
-	{
-		return true;
-	}
-
-	@ConfigItem(
 			keyName = "showWhenNoChange",
 			name = "Always Show Hitpoints Regen",
-			description = "Displays the hitpoints regeneration bar even when the hitpoints are full and there is no change."
+			description = "Displays the hitpoints regeneration bar even when the hitpoints are full and there is no change.",
+			position = 1
 	)
 	default boolean showWhenNoChange()
 	{
@@ -89,11 +59,96 @@ public interface LiteRegenMeterConfig extends Config
 	@ConfigItem(
 			keyName = "notifyBeforeHpRegenDuration",
 			name = "Hitpoint Regen Notification",
-			description = "Sets a notification time (in seconds) before the next hitpoint regeneration occurs. A value of 0 disables notifications."
+			description = "Sets a notification time (in seconds) before the next hitpoint regeneration occurs. A value of 0 disables notifications.",
+			position = 2
 	)
 	@Units(Units.SECONDS)
 	default int getNotifyBeforeHpRegenSeconds()
 	{
 		return 0;
 	}
+
+	@Alpha
+	@ConfigItem(
+			keyName = "hitpointsColor",
+			name = "Hitpoints Bar Color",
+			description = "Color of the hitpoints regeneration bar.",
+			position = 3
+	)
+	default Color getHitpointsColor()
+	{
+		return Color.RED; // Default color
+	}
+
+	@ConfigItem(
+			keyName = "showSpecial",
+			name = "Display Spec. Attack Regen",
+			description = "Enables a regeneration bar below the Special Attack orb to indicate special attack recovery.",
+			position = 4
+	)
+	default boolean showSpecial()
+	{
+		return true;
+	}
+
+	@Alpha
+	@ConfigItem(
+			keyName = "specialColor",
+			name = "Spec. Attack Bar Color",
+			description = "Color of the special attack regeneration bar.",
+			position = 5
+	)
+	default Color getSpecialColor()
+	{
+		return Color.CYAN; // Default color
+	}
+
+	@ConfigItem(
+			keyName = "lineThickness",
+			name = "Line Thickness",
+			description = "Sets the thickness of the regeneration bars.",
+			position = 6
+	)
+	@Units(Units.PIXELS)
+	default LineThickness getLineThickness() {
+		return LineThickness.MEDIUM; // Default thickness
+	}
+
+	@ConfigItem(
+			keyName = "barWidth",
+			name = "Bar Width",
+			description = "Choose the width of the regeneration bars.",
+			position = 7
+	)
+	default BarWidth getBarWidth() {
+		return BarWidth.NORMAL; // Default width
+	}
+
+	// Enum for bar width options
+	public enum BarWidth {
+		NORMAL,
+		WIDER;
+	}
+	@ConfigItem(
+			keyName = "showBackdrops",
+			name = "Show Backdrops",
+			description = "Enables or disables the display of the backdrop behind the regeneration bars.",
+			position = 8
+	)
+	default boolean showBackdrops()
+	{
+		return true; // Default value to show backdrops
+	}
+	@Alpha
+	@ConfigItem(
+			keyName = "backdropColor",
+			name = "Regen area Color",
+			description = "Color of the backdrop that represents the area to fill the regeneration bar.",
+			position = 9
+	)
+	default Color getBackdropColor()
+	{
+		return new Color(0x505050); // Default backdrop color
+	}
+
 }

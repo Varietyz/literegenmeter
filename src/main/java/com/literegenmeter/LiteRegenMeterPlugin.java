@@ -44,9 +44,9 @@ import net.runelite.client.ui.overlay.OverlayManager;
 import javax.inject.Inject;
 
 @PluginDescriptor(
-	name = "LITE Regen Meter",
-	description = "Track and show the hitpoints and special attack regeneration timers, adjusted to work with the RuneLITE theme by Smoke (Smoked today).",
-	tags = {"combat", "health", "hitpoints", "special", "attack", "overlay", "notifications", "runelite", "theme", "smoke", "varietyz", "orb", "bar"}
+		name = "LITE Regen Meter",
+		description = "Customizable regen meters for the RuneLITE theme pack by Smoke (Smoked today).",
+		tags = {"combat", "health", "hitpoints", "special", "attack", "overlay", "notifications", "runelite", "theme", "smoke", "varietyz", "orb", "bar"}
 )
 public class LiteRegenMeterPlugin extends Plugin
 {
@@ -140,6 +140,7 @@ public class LiteRegenMeterPlugin extends Plugin
 	@Subscribe
 	public void onGameTick(GameTick event)
 	{
+		int ticksPerPixel = (config.getBarWidth() == LiteRegenMeterConfig.BarWidth.NORMAL) ? 4 : 3;
 		final int ticksPerSpecRegen = wearingLightbearer ? SPEC_REGEN_TICKS / 2 : SPEC_REGEN_TICKS;
 
 		if (client.getVarpValue(VarPlayer.SPECIAL_ATTACK_PERCENT) == 1000)
@@ -189,3 +190,4 @@ public class LiteRegenMeterPlugin extends Plugin
 		return ticksBeforeHPRegen == notifyTick;
 	}
 }
+

@@ -85,40 +85,66 @@ class LiteRegenMeterOverlay extends Overlay
 		return null;
 	}
 
-
-	private void renderRegen(Graphics2D g, @Component int componentId, double percent, Color color)
-	{
+	private void renderRegen(Graphics2D g, @Component int componentId, double percent, Color color) {
 		Widget widget = client.getWidget(componentId);
-		if (widget == null || widget.isHidden())
-		{
+		if (widget == null || widget.isHidden()) {
 			return;
 		}
 		Rectangle bounds = widget.getBounds();
 
-		// Constants
-		final int BAR_WIDTH = 25; // Fixed width for the regeneration bar
-		final int MAX_TICKS = 100; // Total number of ticks for full regen
+		// Get user-configured line thickness
+		LineThickness lineThickness = config.getLineThickness();
+
+		// Get user-configured bar width
+		LiteRegenMeterConfig.BarWidth barWidthOption = config.getBarWidth();
+
+		// Set BAR_WIDTH based on user selection
+		final int BAR_WIDTH = (barWidthOption == LiteRegenMeterConfig.BarWidth.NORMAL) ? 25 : 34;
+
+		// Calculate the bar width based on percentage
 		double barWidth = BAR_WIDTH * percent; // Calculate the width based on percentage
 
 		// Ensure the bar width does not exceed the fixed width
 		barWidth = Math.min(barWidth, BAR_WIDTH);
 
 		// Set bar height and position
-		double barHeight = 2; // Set to desired height
-		double barX = bounds.x + OFFSET - 3; // Position adjusted to match original code
-		double barY = bounds.y + (bounds.height / 2) + (DIAMETER / 2) - 1; // Vertically center the bar using DIAMETER
+		double barX = bounds.x + OFFSET - 3 - (BAR_WIDTH - 25) - 1; // Shift X for wider bars by the difference in width and move left by 1 pixel
+		double barY = bounds.y + (bounds.height / 2) + (DIAMETER / 2) - 2 + 1; // Position Y at the center and move down by 1 pixel
 
 		// Create a rectangle for the bar
-		Rectangle bar = new Rectangle((int) barX, (int) barY, (int) barWidth, (int) barHeight);
+		Rectangle bar = new Rectangle((int) barX, (int) barY, (int) barWidth, lineThickness.getValue()); // Set height based on user choice
 
-		// Set stroke and color for drawing
-		final Stroke STROKE = new BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
-		g.setStroke(STROKE);
-		g.setColor(color);
+		// Create a rectangle for the background (outer)
+		Rectangle background = new Rectangle((int) (barX - 1), (int) (barY - 1), BAR_WIDTH + 2, lineThickness.getValue() + 2); // Background width is fixed to BAR_WIDTH and add 1 pixel to top and bottom
 
-		// Draw the bar
-		g.fill(bar);
+		// Draw the background and the bar only if the percentage is greater than 0
+		if (percent > 0) {
+			if (config.showBackdrops()) {
+				// Draw the outer border using the default backdrop color
+				g.setColor(new Color(0x171717)); // Use the border color
+				g.fill(background); // Draw the outer background first
+			}
+
+			// Set inner backdrop height based on the line thickness
+			int innerHeight = lineThickness.getValue();
+
+			// Check if the backdrop should be drawn based on user configuration
+			if (config.showBackdrops()) {
+				// Use the user-configured backdrop color if set, otherwise use default
+				Color backdropColor = config.getBackdropColor(); // Get the backdrop color from config
+
+				// Create a rectangle for the inner backdrop
+				Rectangle innerBackground = new Rectangle((int) (barX), (int) (barY), BAR_WIDTH, innerHeight); // Adjust position for the inner background
+				g.setColor(backdropColor); // Use the user-configured backdrop color
+				g.fill(innerBackground); // Draw the inner backdrop
+			}
+
+			// Set stroke and color for drawing the bar
+			g.setStroke(new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER));
+			g.setColor(color);
+
+			// Draw the bar
+			g.fill(bar);
+		}
 	}
-
-
 }
