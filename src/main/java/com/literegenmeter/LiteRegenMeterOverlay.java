@@ -147,4 +147,5 @@ class LiteRegenMeterOverlay extends Overlay
 			g.fill(bar);
 		}
 	}
+
 }

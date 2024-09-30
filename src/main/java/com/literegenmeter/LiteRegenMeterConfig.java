@@ -31,6 +31,7 @@ import net.runelite.client.config.Units;
 import java.awt.Color;
 import net.runelite.client.config.Alpha;
 
+
 @ConfigGroup("regenmeter")
 public interface LiteRegenMeterConfig extends Config
 {
@@ -47,13 +48,13 @@ public interface LiteRegenMeterConfig extends Config
 
 	@ConfigItem(
 			keyName = "showWhenNoChange",
-			name = "Always Show Hitpoints Regen",
+			name = "Always Display Hitpoints",
 			description = "Displays the hitpoints regeneration bar even when the hitpoints are full and there is no change.",
 			position = 1
 	)
 	default boolean showWhenNoChange()
 	{
-		return false;
+		return true;
 	}
 
 	@ConfigItem(
@@ -79,12 +80,34 @@ public interface LiteRegenMeterConfig extends Config
 	{
 		return Color.RED; // Default color
 	}
+	@ConfigItem(
+			keyName = "showPrayerDoseIndicator",
+			name = "Display Prayer Dose Indicator",
+			description = "Enables the prayer dose indicator.",
+			position = 4
+	)
+	default boolean showPrayerDoseIndicator()
+	{
+		return true;
+	}
 
+	@Alpha
+	@ConfigItem(
+			keyName = "prayerDoseOrbStartColor",
+			name = "Dose Indicator Color",
+			description = "Color of the flashing bar underneath the orb when a potion should be drank",
+			position = 5
+	)
+	default Color prayerDoseOrbStartColor()
+	{
+
+		return Color.CYAN;
+	}
 	@ConfigItem(
 			keyName = "showSpecial",
 			name = "Display Spec. Attack Regen",
 			description = "Enables a regeneration bar below the Special Attack orb to indicate special attack recovery.",
-			position = 4
+			position = 6
 	)
 	default boolean showSpecial()
 	{
@@ -96,38 +119,11 @@ public interface LiteRegenMeterConfig extends Config
 			keyName = "specialColor",
 			name = "Spec. Attack Bar Color",
 			description = "Color of the special attack regeneration bar.",
-			position = 5
+			position = 7
 	)
 	default Color getSpecialColor()
 	{
-		return Color.CYAN; // Default color
-	}
-
-	@ConfigItem(
-			keyName = "lineThickness",
-			name = "Line Thickness",
-			description = "Sets the thickness of the regeneration bars.",
-			position = 6
-	)
-	@Units(Units.PIXELS)
-	default LineThickness getLineThickness() {
-		return LineThickness.MEDIUM; // Default thickness
-	}
-
-	@ConfigItem(
-			keyName = "barWidth",
-			name = "Bar Width",
-			description = "Choose the width of the regeneration bars.",
-			position = 7
-	)
-	default BarWidth getBarWidth() {
-		return BarWidth.NORMAL; // Default width
-	}
-
-	// Enum for bar width options
-	public enum BarWidth {
-		NORMAL,
-		WIDER;
+		return Color.ORANGE; // Default color
 	}
 	@ConfigItem(
 			keyName = "showBackdrops",
@@ -142,13 +138,39 @@ public interface LiteRegenMeterConfig extends Config
 	@Alpha
 	@ConfigItem(
 			keyName = "backdropColor",
-			name = "Regen area Color",
+			name = "Regen Area Color",
 			description = "Color of the backdrop that represents the area to fill the regeneration bar.",
 			position = 9
 	)
 	default Color getBackdropColor()
 	{
 		return new Color(0x505050); // Default backdrop color
+	}
+	@ConfigItem(
+			keyName = "lineThickness",
+			name = "Line Thickness",
+			description = "Sets the thickness of the regeneration bars.",
+			position = 10
+	)
+	@Units(Units.PIXELS)
+	default LineThickness getLineThickness() {
+		return LineThickness.MEDIUM; // Default thickness
+	}
+
+	@ConfigItem(
+			keyName = "barWidth",
+			name = "Bar Width",
+			description = "Choose the width of the regeneration bars.",
+			position = 11
+	)
+	default BarWidth getBarWidth() {
+		return BarWidth.NORMAL; // Default width
+	}
+
+	// Enum for bar width options
+	public enum BarWidth {
+		NORMAL,
+		WIDER;
 	}
 
 }

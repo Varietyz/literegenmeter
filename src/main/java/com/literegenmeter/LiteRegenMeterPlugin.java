@@ -28,6 +28,7 @@
 package com.literegenmeter;
 
 import com.google.inject.Provides;
+import lombok.Setter;
 import lombok.Getter;
 import net.runelite.api.*;
 import net.runelite.api.events.GameStateChanged;
@@ -40,16 +41,26 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
-
+import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
+import net.runelite.http.api.item.ItemStats;
+import net.runelite.client.game.ItemManager;
+import net.runelite.client.game.SpriteManager;
 import javax.inject.Inject;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import javax.annotation.Nullable;
+import lombok.AccessLevel;
 
 @PluginDescriptor(
 		name = "LITE Regen Meter",
-		description = "Customizable regen meters for the RuneLITE theme pack by Smoke (Smoked today).",
+		description = "Track and show the hitpoints and special attack regeneration timers, adjusted to work with the RuneLITE theme by Smoke (Smoked today).",
 		tags = {"combat", "health", "hitpoints", "special", "attack", "overlay", "notifications", "runelite", "theme", "smoke", "varietyz", "orb", "bar"}
 )
 public class LiteRegenMeterPlugin extends Plugin
 {
+	private Instant startOfLastTick = Instant.now();
 	private static final int SPEC_REGEN_TICKS = 50;
 	private static final int NORMAL_HP_REGEN_TICKS = 100;
 
@@ -63,10 +74,29 @@ public class LiteRegenMeterPlugin extends Plugin
 	private Notifier notifier;
 
 	@Inject
+	private LitePrayerDoseOverlay doseOverlay;
+
+	@Inject
 	private LiteRegenMeterOverlay overlay;
 
 	@Inject
 	private LiteRegenMeterConfig config;
+
+	@Getter(AccessLevel.PACKAGE)
+	private boolean prayersActive = false;
+
+	@Getter(AccessLevel.PACKAGE)
+	@Setter(AccessLevel.PACKAGE)
+	private int prayerBonus;
+
+	@Inject
+	private InfoBoxManager infoBoxManager;
+
+	@Inject
+	private SpriteManager spriteManager;
+
+	@Inject
+	private ItemManager itemManager;
 
 	@Getter
 	private double hitpointsPercentage;
@@ -89,12 +119,14 @@ public class LiteRegenMeterPlugin extends Plugin
 	protected void startUp() throws Exception
 	{
 		overlayManager.add(overlay);
+		overlayManager.add(doseOverlay);
 	}
 
 	@Override
 	protected void shutDown() throws Exception
 	{
 		overlayManager.remove(overlay);
+		overlayManager.remove(doseOverlay);
 	}
 
 	@Subscribe
@@ -110,6 +142,17 @@ public class LiteRegenMeterPlugin extends Plugin
 	@Subscribe
 	public void onItemContainerChanged(ItemContainerChanged event)
 	{
+		final int id = event.getContainerId();
+		if (id == InventoryID.INVENTORY.getId())
+		{
+			updatePotionBonus(event.getItemContainer(),
+					client.getItemContainer(InventoryID.EQUIPMENT));
+		}
+		else if (id == InventoryID.EQUIPMENT.getId())
+		{
+			prayerBonus = totalPrayerBonus(event.getItemContainer().getItems());
+		}
+
 		if (event.getContainerId() != InventoryID.EQUIPMENT.getId())
 		{
 			return;
@@ -140,7 +183,6 @@ public class LiteRegenMeterPlugin extends Plugin
 	@Subscribe
 	public void onGameTick(GameTick event)
 	{
-		int ticksPerPixel = (config.getBarWidth() == LiteRegenMeterConfig.BarWidth.NORMAL) ? 4 : 3;
 		final int ticksPerSpecRegen = wearingLightbearer ? SPEC_REGEN_TICKS / 2 : SPEC_REGEN_TICKS;
 
 		if (client.getVarpValue(VarPlayer.SPECIAL_ATTACK_PERCENT) == 1000)
@@ -180,6 +222,23 @@ public class LiteRegenMeterPlugin extends Plugin
 		{
 			notifier.notify("Your next hitpoint will regenerate soon!");
 		}
+
+		if (config.showPrayerDoseIndicator())
+		{
+			doseOverlay.onTick();
+		}
+
+
+		for (PrayerType prayerType : PrayerType.values())
+		{
+			Prayer prayer = prayerType.getPrayer();
+			int ord = prayerType.ordinal();
+
+			if (!client.isPrayerActive(prayer)) {
+				continue;
+			}
+
+		}
 	}
 
 	private boolean shouldNotifyHpRegenThisTick(int ticksPerHPRegen)
@@ -189,5 +248,135 @@ public class LiteRegenMeterPlugin extends Plugin
 		final int notifyTick = (int) Math.ceil(config.getNotifyBeforeHpRegenSeconds() * 1000d / Constants.GAME_TICK_LENGTH);
 		return ticksBeforeHPRegen == notifyTick;
 	}
-}
+	private int totalPrayerBonus(Item[] items)
+	{
+		int total = 0;
+		for (Item item : items)
+		{
+			ItemStats is = itemManager.getItemStats(item.getId(), false);
+			if (is != null && is.getEquipment() != null)
+			{
+				total += is.getEquipment().getPrayer();
+			}
+		}
+		return total;
+	}
 
+	private void updatePotionBonus(ItemContainer inventory, @Nullable ItemContainer equip)
+	{
+		boolean hasPrayerPotion = false;
+		boolean hasSuperRestore = false;
+		boolean hasSanfew = false;
+		boolean hasWrench = false;
+
+		for (Item item : inventory.getItems())
+		{
+			final PrayerRestoreType type = PrayerRestoreType.getType(item.getId());
+
+			if (type != null)
+			{
+				switch (type)
+				{
+					case PRAYERPOT:
+						hasPrayerPotion = true;
+						break;
+					case RESTOREPOT:
+						hasSuperRestore = true;
+						break;
+					case SANFEWPOT:
+						hasSanfew = true;
+						break;
+					case HOLYWRENCH:
+						hasWrench = true;
+						break;
+				}
+			}
+		}
+
+		// Some items providing the holy wrench bonus can also be worn
+		if (!hasWrench && equip != null)
+		{
+			for (Item item : equip.getItems())
+			{
+				final PrayerRestoreType type = PrayerRestoreType.getType(item.getId());
+				if (type == PrayerRestoreType.HOLYWRENCH)
+				{
+					hasWrench = true;
+					break;
+				}
+			}
+		}
+
+		// Prayer potion: floor(7 + 25% of base level) - 27% with holy wrench
+		// Super restore: floor(8 + 25% of base level) - 27% with holy wrench
+		// Sanfew serum: floor(4 + 30% of base level) - 32% with holy wrench
+		final int prayerLevel = client.getRealSkillLevel(Skill.PRAYER);
+		int restored = 0;
+		if (hasSanfew)
+		{
+			restored = Math.max(restored, 4 + (int) Math.floor(prayerLevel *  (hasWrench ? .32 : .30)));
+		}
+		if (hasSuperRestore)
+		{
+			restored = Math.max(restored, 8 + (int) Math.floor(prayerLevel *  (hasWrench ? .27 : .25)));
+		}
+		if (hasPrayerPotion)
+		{
+			restored = Math.max(restored, 7 + (int) Math.floor(prayerLevel *  (hasWrench ? .27 : .25)));
+		}
+
+		doseOverlay.setRestoreAmount(restored);
+	}
+
+
+
+	private static int getDrainEffect(Client client)
+	{
+		int drainEffect = 0;
+
+		for (PrayerType prayerType : PrayerType.values())
+		{
+			if (client.isPrayerActive(prayerType.getPrayer()))
+			{
+				drainEffect += prayerType.getDrainEffect();
+			}
+		}
+
+		return drainEffect;
+	}
+
+	String getEstimatedTimeRemaining(boolean formatForOrb)
+	{
+		final int drainEffect = getDrainEffect(client);
+
+		if (drainEffect == 0)
+		{
+			return "N/A";
+		}
+
+		// Calculate how many seconds each prayer points last so the prayer bonus can be applied
+		// https://oldschool.runescape.wiki/w/Prayer#Prayer_drain_mechanics
+		final int drainResistance = 2 * prayerBonus + 60;
+		final double secondsPerPoint = 0.6 * ((double) drainResistance / drainEffect);
+
+		// Calculate the number of seconds left
+		final int currentPrayer = client.getBoostedSkillLevel(Skill.PRAYER);
+		final double secondsLeft = (currentPrayer * secondsPerPoint);
+
+		LocalTime timeLeft = LocalTime.ofSecondOfDay((long) secondsLeft);
+
+		if (formatForOrb && (timeLeft.getHour() > 0 || timeLeft.getMinute() > 9))
+		{
+			long minutes = Duration.ofSeconds((long) secondsLeft).toMinutes();
+			return String.format("%dm", minutes);
+		}
+		else if (timeLeft.getHour() > 0)
+		{
+			return timeLeft.format(DateTimeFormatter.ofPattern("H:mm:ss"));
+		}
+		else
+		{
+			return timeLeft.format(DateTimeFormatter.ofPattern("m:ss"));
+		}
+	}
+}
