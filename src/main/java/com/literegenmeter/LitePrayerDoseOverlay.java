@@ -87,9 +87,36 @@ class LitePrayerDoseOverlay extends Overlay
         final int BAR_WIDTH = (barWidthOption == LiteRegenMeterConfig.BarWidth.NORMAL) ? 25 : 34;
         int lineThickness = config.getLineThickness().getValue();
 
-        // Positioning the bar
-        final int barX = (int) (bounds.getX() + OFFSET - 3 - (BAR_WIDTH - 25) - 4); // Shift X for wider bars
-        final int barY = (int) (bounds.getY() + (bounds.height / 2) + (DIAMETER / 2) - 2); // Center Y and adjust
+        int barX;
+        switch (config.barXPosition()) {
+            case LEFT:
+                barX = (int) (bounds.x + OFFSET - 1 - 25); // Left config
+                break;
+            case MIDDLE:
+                // Adjust barX based on the width configuration for MIDDLE
+                if (config.getBarWidth() == LiteRegenMeterConfig.BarWidth.WIDER) {
+                    barX = (int) (bounds.x + OFFSET - 1 - 20); // Wider option
+                } else {
+                    barX = (int) (bounds.x + OFFSET - 1 - 15); // Normal option
+                }
+                break;
+            case RIGHT:
+                barX = (int) (bounds.x + OFFSET - 3 - (BAR_WIDTH - 25) - 4); // Right config
+                break;
+            default:
+                barX = (int) (bounds.x + OFFSET - 1); // Fallback
+        }
+
+// Determine bar Y position based on configuration
+        int barY;
+        switch (config.barYPosition()) {
+            case DETACHED:
+                barY = (int) (bounds.y + (bounds.height / 2) + (DIAMETER / 2) - 2 + 2); // Floating
+                break;
+            case ATTACHED:
+            default:
+                barY = (int) (bounds.y + (bounds.height / 2) + (DIAMETER / 2) - 2); // Attached
+        }
 
         final long timeSinceLastTick = Duration.between(startOfLastTick, Instant.now()).toMillis();
         final float tickProgress = Math.min(timeSinceLastTick / PULSE_TIME, 1); // Cap between 0 and 1
@@ -130,5 +157,4 @@ class LitePrayerDoseOverlay extends Overlay
 
         return null;
     }
-
 }

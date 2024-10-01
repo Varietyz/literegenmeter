@@ -166,8 +166,37 @@ public interface LiteRegenMeterConfig extends Config
 	default BarWidth getBarWidth() {
 		return BarWidth.NORMAL; // Default width
 	}
+	@ConfigItem(
+			keyName = "barXPosition",
+			name = "Meter Position",
+			description = "Choose the position of the regeneration bars",
+			position = 12
+	)
+	default BarXPosition barXPosition() {
+		return BarXPosition.LEFT; // Default position
+	}
 
-	// Enum for bar width options
+	@ConfigItem(
+			keyName = "barYPosition",
+			name = "Meter Attach",
+			description = "Choose to attach or detach the regeneration bars",
+			position = 13
+	)
+	default BarYPosition barYPosition() {
+		return BarYPosition.ATTACHED; // Default position
+	}
+
+	public enum BarXPosition {
+		LEFT,
+		MIDDLE,
+		RIGHT
+	}
+
+	public enum BarYPosition {
+		ATTACHED,
+		DETACHED
+	}
+
 	public enum BarWidth {
 		NORMAL,
 		WIDER;

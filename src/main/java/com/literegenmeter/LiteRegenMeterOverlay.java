@@ -107,9 +107,38 @@ class LiteRegenMeterOverlay extends Overlay
 		// Ensure the bar width does not exceed the fixed width
 		barWidth = Math.min(barWidth, BAR_WIDTH);
 
-		// Set bar height and position
-		double barX = bounds.x + OFFSET - 3 - (BAR_WIDTH - 25) - 1; // Shift X for wider bars by the difference in width and move left by 1 pixel
-		double barY = bounds.y + (bounds.height / 2) + (DIAMETER / 2) - 2 + 1; // Position Y at the center and move down by 1 pixel
+		// Determine bar X position based on configuration
+		double barX;
+		switch (config.barXPosition()) {
+			case LEFT:
+				barX = bounds.x + OFFSET - 1 - 22; // Left config
+				break;
+			case MIDDLE:
+				// Adjust barX based on the width configuration for MIDDLE
+				if (config.getBarWidth() == LiteRegenMeterConfig.BarWidth.WIDER) {
+					barX = bounds.x + OFFSET - 1 - 17; // Wider option
+				} else {
+					barX = bounds.x + OFFSET - 1 - 12; // Normal option
+				}
+				break;
+			case RIGHT:
+				barX = bounds.x + OFFSET - 3 - (BAR_WIDTH - 25) - 1; // Right config
+				break;
+			default:
+				barX = bounds.x + OFFSET - 1; // Fallback
+		}
+
+
+		// Determine bar Y position based on configuration
+		double barY;
+		switch (config.barYPosition()) {
+			case DETACHED:
+				barY = bounds.y + (bounds.height / 2) + (DIAMETER / 2) - 2 + 3; // Floating
+				break;
+			case ATTACHED:
+			default:
+				barY = bounds.y + (bounds.height / 2) + (DIAMETER / 2) - 2 + 1; // Attached
+		}
 
 		// Create a rectangle for the bar
 		Rectangle bar = new Rectangle((int) barX, (int) barY, (int) barWidth, lineThickness.getValue()); // Set height based on user choice
@@ -147,5 +176,4 @@ class LiteRegenMeterOverlay extends Overlay
 			g.fill(bar);
 		}
 	}
-
 }
