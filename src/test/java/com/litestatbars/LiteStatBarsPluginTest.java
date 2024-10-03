@@ -1,9 +1,9 @@
-package com.literegenmeter;
+package com.litestatbars;
 
 import net.runelite.client.RuneLite;
 import net.runelite.client.externalplugins.ExternalPluginManager;
 
-public class LiteRegenMeterPluginTest
+public class LiteStatBarsPluginTest
 {
 	public static void main(String[] args) throws Exception
 	{
