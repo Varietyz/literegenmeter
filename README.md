@@ -1,27 +1,27 @@
-# Lite Regeneration Meters (RuneLITE PACK MOD)
-Show the hitpoints and special attack regeneration timers underneath the orbs, adjusted to work with the [RuneLITE Theme by Smoke (Smoked today)](https://github.com/melkypie/resource-packs/tree/pack-RuneLITE).
+# Lite Stat Bars (RuneLITE PACK MOD)
+Draws dynamic status bars on to the UI, adjusted to work with the [RuneLITE Theme by Smoke (Smoked today)](https://github.com/melkypie/resource-packs/tree/pack-RuneLITE).
 To get in touch with the creator, you may visit [discord](https://discord.gg/varietyz)
 
 ## Purpose of the plugin: Regeneration Meters modification
-This is soley to accomodate the orbs of the theme pack, users experience a visual bug with the orbs when using the regular regeneration meters, as seen in the example below:
+This is soley to accomodate the status bars of the theme pack, users experience a visual indecency when using the regular status bars, as seen in the example below:
 
-![visualbug](https://github.com/user-attachments/assets/31d547aa-5f21-4af2-abfd-6f9a5cf6458e)
+PIC WILL BE UPDATED HERE LATER
 
-After plugin installation, navigate to settings and search for 'Regen'
+After plugin installation, navigate to settings and search for 'Status'
 
-![settings](https://github.com/user-attachments/assets/1a78705e-bbf1-4b87-81ef-35c0aaeb4a5a)
+PIC WILL BE UPDATED HERE LATER
 
-Disable the 'Regeneration Meter' and enable the 'LITE Regen Meter' Plugin.
+Disable the 'Status Bars' and enable the 'LITE Stat Bar' Plugin.
 
-![switchplugin](https://github.com/user-attachments/assets/736043af-73a8-49eb-8e43-0eba996c10c5)
+PIC WILL BE UPDATED HERE LATER
 
 Access the plugins configuration panel and adjust to your liking/needs!
 
-![setup](https://github.com/user-attachments/assets/17b4eb08-d3ec-4b4a-a8f6-198ea8645525)
+PIC WILL BE UPDATED HERE LATER
 
 If all done correctly, it should display as so:
 
-![endproduct](https://github.com/user-attachments/assets/cd5cdcb9-933c-43bb-afeb-bc2eaccd2526)
+PIC WILL BE UPDATED HERE LATER
 
 
 ## Creator tag
