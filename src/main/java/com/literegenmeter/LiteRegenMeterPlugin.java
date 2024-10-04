@@ -64,8 +64,8 @@ import java.time.format.DateTimeFormatter;
 
 @PluginDescriptor(
 	name = "LITE Regen Meter",
-	description = "Track and show the hitpoints and special attack regeneration timers, adjusted to work with the RuneLITE theme by Smoke (Smoked today).",
-	tags = {"combat", "health", "hitpoints", "special", "attack", "overlay", "notifications", "runelite", "theme", "smoke", "varietyz", "orb", "bar"}
+	description = "Track Regen timers and display status orbs for any skill, adjusted to work with the RuneLITE theme by Smoke (Smoked today).",
+	tags = {"combat", "health", "hitpoints", "special", "attack", "overlay", "notifications", "runelite", "theme", "smoke", "varietyz", "orb", "bar", "status", "calculate", "dose", "prayer", "skilling"}
 )
 @PluginDependency(ItemStatPlugin.class)
 public class LiteRegenMeterPlugin extends Plugin
