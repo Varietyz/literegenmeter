@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2024, Smoke (Smoked today) <https://github.com/Varietyz>
  * Copyright (c) 2019, Sean Dewar <https://github.com/seandewar>
  * Copyright (c) 2018, Abex
  * Copyright (c) 2018, Zimaya <https://github.com/Zimaya>
