@@ -46,26 +46,26 @@ public interface LiteRegenMeterConfig extends Config
 	@ConfigSection(
 			name = "Display (Stat Bars)",
 			description = "Choose to display the stat bars.",
-			position = 1
+			position = 3
 	)
 	String MainBarSettingsSection = "MainBarSettings";
 
 	@ConfigSection(
 			name = "Settings (Regen Meters)",
 			description = "Configuration for the regen meters.",
-			position = 2
+			position = 1
 	)
 	String RegenMeterSettingsSection = "RegenMeterSettings";
 	@ConfigSection(
 			name = "Settings (Stat Bars)",
 			description = "Configuration for the stat bars.",
-			position = 3
+			position = 4
 	)
 	String MainSettingsSection = "MainSettings";
 	@ConfigSection(
 			name = "Colors (Regen Meters)",
 			description = "Setup the colors for the regen meters.",
-			position = 4
+			position = 2
 	)
 	String RegenMeterColorSettingsSection = "RegenMeterColorSettings";
 	@ConfigSection(
