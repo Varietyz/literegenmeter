@@ -29,6 +29,7 @@ import net.runelite.api.Client;
 import net.runelite.api.annotations.Component;
 import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.Widget;
+import com.literegenmeter.orbmeters.LineThickness;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -177,4 +178,6 @@ class LiteRegenMeterOverlay extends Overlay
 			g.fill(bar);
 		}
 	}
+
+
 }

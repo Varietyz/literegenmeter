@@ -22,14 +22,14 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.literegenmeter;
+package com.literegenmeter.orbmeters;
 
 import com.google.common.collect.ImmutableMap;
 import net.runelite.api.ItemID;
 
 import java.util.Map;
 
-enum PrayerRestoreType
+public enum PrayerRestoreType
 {
 	RESTOREPOT(ItemID.SUPER_RESTORE4, ItemID.SUPER_RESTORE3, ItemID.SUPER_RESTORE2, ItemID.SUPER_RESTORE1,
 		ItemID.BLIGHTED_SUPER_RESTORE4, ItemID.BLIGHTED_SUPER_RESTORE3, ItemID.BLIGHTED_SUPER_RESTORE2,
@@ -61,7 +61,7 @@ enum PrayerRestoreType
 		prayerRestores = builder.build();
 	}
 
-	static PrayerRestoreType getType(final int itemId)
+	public static PrayerRestoreType getType(final int itemId)
 	{
 		return prayerRestores.get(itemId);
 	}

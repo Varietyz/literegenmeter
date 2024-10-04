@@ -1,33 +1,60 @@
-# Lite Regeneration Meters (RuneLITE PACK MOD)
-Show the hitpoints and special attack regeneration timers underneath the orbs, adjusted to work with the [RuneLITE Theme by Smoke (Smoked today)](https://github.com/melkypie/resource-packs/tree/pack-RuneLITE).
-To get in touch with the creator, you may visit [discord](https://discord.gg/varietyz)
+# LITE Regen Meter (RuneLITE Pack Mod)
 
-## Purpose of the plugin: Regeneration Meters modification
-This is soley to accomodate the orbs of the theme pack, users experience a visual bug with the orbs when using the regular regeneration meters, as seen in the example below:
+This plugin modifies dynamic status bars and regeneration meters, ensuring compatibility with the [RuneLITE Theme by Smoke (Smoked today)](https://github.com/melkypie/resource-packs/tree/pack-RuneLITE). 
 
-![visualbug](https://github.com/user-attachments/assets/31d547aa-5f21-4af2-abfd-6f9a5cf6458e)
+It aims to enhance the visual aesthetics and user experience by resolving visual bugs that occur when using the default status bars and regeneration meters.
 
-After plugin installation, navigate to settings and search for 'Regen'
+For any inquiries, feel free to contact the creator via [Discord](https://discord.gg/varietyz).
 
-![settings](https://github.com/user-attachments/assets/1a78705e-bbf1-4b87-81ef-35c0aaeb4a5a)
+---
+### **Info: LITE Regen Meter**
 
-Disable the 'Regeneration Meter' and enable the 'LITE Regen Meter' Plugin.
-
-![switchplugin](https://github.com/user-attachments/assets/736043af-73a8-49eb-8e43-0eba996c10c5)
-
-Access the plugins configuration panel and adjust to your liking/needs!
-
-![setup](https://github.com/user-attachments/assets/17b4eb08-d3ec-4b4a-a8f6-198ea8645525)
-
-If all done correctly, it should display as so:
-
-![endproduct](https://github.com/user-attachments/assets/cd5cdcb9-933c-43bb-afeb-bc2eaccd2526)
+- Adjusts the in-game status bars to complement the RuneLITE theme, addressing a visual indecency experienced with the default status bars.
+  
+- Adjusts the hitpoints and special attack regeneration timers to match the RuneLITE theme, resolving visual bugs that occur when using the default meters.
 
 
-## Creator tag
+- **Instructions:**
+    1. After installation, navigate to the settings panel and search for `Status Bars` and `Regeneration Meter`.
+    2. Disable the default plugin's and enable the `LITE Regen Meter` plugin.
+    3. Customize the settings within the configuration panel to your preference.
+  
+
+- **Example of Default Visual Bug:**
+
+  ![visualbug](https://github.com/user-attachments/assets/31d547aa-5f21-4af2-abfd-6f9a5cf6458e)
+
+  ![image](https://github.com/user-attachments/assets/b4606c6c-f4b2-4e1a-99a8-672a6103c186)
+
+- **Plugin Configuration Screenshots:**
+
+TO UPLOAD
+
+- **Correct Display After Setup:**
+
+  ![endproduct](https://github.com/user-attachments/assets/cd5cdcb9-933c-43bb-afeb-bc2eaccd2526)
+    TO ADD
+
+  ![image](https://github.com/user-attachments/assets/ab11a8df-06bc-4e3b-aea2-b23d5e4722fc)
+  ![image](https://github.com/user-attachments/assets/28d3a9f6-fc82-4c7d-8396-1d61d9d3fc5f)
+  ![image](https://github.com/user-attachments/assets/74e2cf58-b7ed-4cdd-b0da-954c36e6f1b7)
+
+---
+
+
+## **Safety & Compliance**
+
+All plugins that are successfully merged into the [Plugin Hub](https://github.com/runelite/plugin-hub) are reviewed and verified by the RuneLite development team, ensuring they are safe to use. For more information, you can view the [Plugin Hub readme](https://github.com/runelite/plugin-hub#Reviewing).
+
+Furthermore, [RuneLite itself has been confirmed as fully compliant by Jagex](https://secure.runescape.com/m=news/a=13/another-message-about-unofficial-clients?oldschool=1).
+
+---
+
+## **Creator Tag**
 ![Smoke](https://i.ibb.co/PTYfzqB/Rune-LITE-By-Smoke.png)
 
-## Is this Safe to use/Can I get banned for using this?
-All Plugins that get successfully merged into [Plugin Hub](https://github.com/runelite/plugin-hub) have been verified by the @Runelite development team and confirmed safe to use, as stated in their [readme](https://github.com/runelite/plugin-hub#Reviewing). 
+For additional support or questions, reach out via [Discord](https://discord.gg/varietyz).
 
-In turn, [Runelite itself has been confirmed as fully compliant by Jagex](https://secure.runescape.com/m=news/a=13/another-message-about-unofficial-clients?oldschool=1).
+---
+
+This README now merges both plugin descriptions into one, providing a seamless overview for users while retaining clarity, professionalism, and proper formatting for GitHub.

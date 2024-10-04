@@ -3,6 +3,7 @@
  * Copyright (c) 2019, Sean Dewar <https://github.com/seandewar>
  * Copyright (c) 2018, Abex
  * Copyright (c) 2018, Zimaya <https://github.com/Zimaya>
+ * Copyright (c) 2018, Jos <Malevolentdev@gmail.com>
  * Copyright (c) 2017, Adam <Adam@sigterm.info>
  * All rights reserved.
  *
@@ -29,36 +30,44 @@
 package com.literegenmeter;
 
 import com.google.inject.Provides;
-import lombok.Setter;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import net.runelite.api.*;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.VarbitChanged;
 import net.runelite.client.Notifier;
+import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.game.ItemManager;
+import net.runelite.client.game.SpriteManager;
 import net.runelite.client.plugins.Plugin;
+import net.runelite.client.plugins.PluginDependency;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.itemstats.ItemStatPlugin;
+import com.literegenmeter.orbmeters.*;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 import net.runelite.http.api.item.ItemStats;
-import net.runelite.client.game.ItemManager;
-import net.runelite.client.game.SpriteManager;
+import org.apache.commons.lang3.ArrayUtils;
+
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import javax.annotation.Nullable;
-import lombok.AccessLevel;
 
 @PluginDescriptor(
-		name = "LITE Regen Meter",
-		description = "Track and show the hitpoints and special attack regeneration timers, adjusted to work with the RuneLITE theme by Smoke (Smoked today).",
-		tags = {"combat", "health", "hitpoints", "special", "attack", "overlay", "notifications", "runelite", "theme", "smoke", "varietyz", "orb", "bar"}
+	name = "LITE Regen Meter",
+	description = "Track and show the hitpoints and special attack regeneration timers, adjusted to work with the RuneLITE theme by Smoke (Smoked today).",
+	tags = {"combat", "health", "hitpoints", "special", "attack", "overlay", "notifications", "runelite", "theme", "smoke", "varietyz", "orb", "bar"}
 )
+@PluginDependency(ItemStatPlugin.class)
 public class LiteRegenMeterPlugin extends Plugin
 {
 	private Instant startOfLastTick = Instant.now();
@@ -81,7 +90,13 @@ public class LiteRegenMeterPlugin extends Plugin
 	private LiteRegenMeterOverlay overlay;
 
 	@Inject
+	private LiteStatBarsOverlay statBarOverlay;
+
+	@Inject
 	private LiteRegenMeterConfig config;
+
+	@Inject
+	private ClientThread clientThread;
 
 	@Getter(AccessLevel.PACKAGE)
 	private boolean prayersActive = false;
@@ -105,8 +120,12 @@ public class LiteRegenMeterPlugin extends Plugin
 	@Getter
 	private double specialPercentage;
 
+	@Getter(AccessLevel.PACKAGE)
+	private boolean barsDisplayed;
+
 	private int ticksSinceSpecRegen;
 	private int ticksSinceHPRegen;
+	private int lastCombatActionTickCount;
 
 	private boolean wearingLightbearer;
 
@@ -119,7 +138,9 @@ public class LiteRegenMeterPlugin extends Plugin
 	@Override
 	protected void startUp() throws Exception
 	{
+		clientThread.invokeLater(this::checkStatusBars);
 		overlayManager.add(overlay);
+		overlayManager.add(statBarOverlay);
 		overlayManager.add(doseOverlay);
 	}
 
@@ -128,6 +149,8 @@ public class LiteRegenMeterPlugin extends Plugin
 	{
 		overlayManager.remove(overlay);
 		overlayManager.remove(doseOverlay);
+		overlayManager.remove(statBarOverlay);
+		barsDisplayed = false;
 	}
 
 	@Subscribe
@@ -185,6 +208,7 @@ public class LiteRegenMeterPlugin extends Plugin
 	public void onGameTick(GameTick event)
 	{
 		final int ticksPerSpecRegen = wearingLightbearer ? SPEC_REGEN_TICKS / 2 : SPEC_REGEN_TICKS;
+		checkStatusBars();
 
 		if (client.getVarpValue(VarPlayer.SPECIAL_ATTACK_PERCENT) == 1000)
 		{
@@ -239,6 +263,41 @@ public class LiteRegenMeterPlugin extends Plugin
 				continue;
 			}
 
+		}
+	}
+
+	@Subscribe
+	public void onConfigChanged(ConfigChanged event)
+	{
+		if (LiteRegenMeterConfig.GROUP.equals(event.getGroup()) && event.getKey().equals("hideAfterCombatDelay"))
+		{
+			clientThread.invokeLater(this::checkStatusBars);
+		}
+	}
+
+	private void checkStatusBars()
+	{
+		final Player localPlayer = client.getLocalPlayer();
+		if (localPlayer == null)
+		{
+			return;
+		}
+
+		final Actor interacting = localPlayer.getInteracting();
+
+		if (config.hideAfterCombatDelay() == 0)
+		{
+			barsDisplayed = true;
+		}
+		else if ((interacting instanceof NPC && ArrayUtils.contains(((NPC) interacting).getComposition().getActions(), "Attack"))
+				|| (interacting instanceof Player && client.getVarbitValue(Varbits.PVP_SPEC_ORB) == 1))
+		{
+			lastCombatActionTickCount = client.getTickCount();
+			barsDisplayed = true;
+		}
+		else if (client.getTickCount() - lastCombatActionTickCount >= config.hideAfterCombatDelay())
+		{
+			barsDisplayed = false;
 		}
 	}
 
