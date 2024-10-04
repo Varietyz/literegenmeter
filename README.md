@@ -26,18 +26,22 @@ For any inquiries, feel free to contact the creator via [Discord](https://discor
 
   ![image](https://github.com/user-attachments/assets/b4606c6c-f4b2-4e1a-99a8-672a6103c186)
 
-- **Plugin Configuration Screenshots:**
+- **Plugin Configuration Panel:**
 
-TO UPLOAD
+  ![image](https://github.com/user-attachments/assets/a0be16a0-64d0-4924-ab59-9339f9ac620a)
+
 
 - **Correct Display After Setup:**
 
   ![endproduct](https://github.com/user-attachments/assets/cd5cdcb9-933c-43bb-afeb-bc2eaccd2526)
-    TO ADD
+  ![image](https://github.com/user-attachments/assets/2fbc539e-ad7e-4b1f-99e6-124e68cc73df)
+
 
   ![image](https://github.com/user-attachments/assets/ab11a8df-06bc-4e3b-aea2-b23d5e4722fc)
   ![image](https://github.com/user-attachments/assets/28d3a9f6-fc82-4c7d-8396-1d61d9d3fc5f)
   ![image](https://github.com/user-attachments/assets/74e2cf58-b7ed-4cdd-b0da-954c36e6f1b7)
+
+  ![image](https://github.com/user-attachments/assets/83cb4499-09a0-4ab9-95db-8c588019b357)
 
 ---
 
