@@ -4,7 +4,7 @@ This plugin modifies dynamic status bars and regeneration meters, ensuring compa
 
 It aims to enhance the visual aesthetics and user experience by resolving visual bugs that occur when using the default status bars and regeneration meters.
 
-For any inquiries, feel free to contact the creator via [Discord](https://discord.gg/varietyz).
+For any inquiries, feel free to contact the creator via [Discord](https://discord.gg/RQ9H9naf7E).
 
 ---
 ### **Info: LITE Regen Meter**
