@@ -53,60 +53,69 @@ public interface LiteRegenMeterConfig extends Config
 	@ConfigSection(
 			name = "Settings (Regen Meters)",
 			description = "Configuration for the regen meters.",
-			position = 1
+			position = 1,
+			closedByDefault = true
 	)
 	String RegenMeterSettingsSection = "RegenMeterSettings";
 	@ConfigSection(
 			name = "Settings (Stat Bars)",
 			description = "Configuration for the stat bars.",
-			position = 4
+			position = 4,
+			closedByDefault = true
 	)
 	String MainSettingsSection = "MainSettings";
 	@ConfigSection(
 			name = "Colors (Regen Meters)",
 			description = "Setup the colors for the regen meters.",
-			position = 2
+			position = 2,
+			closedByDefault = true
 	)
 	String RegenMeterColorSettingsSection = "RegenMeterColorSettings";
 	@ConfigSection(
 			name = "HP Colors (Stat Bars)",
 			description = "Configuration for health color options.",
-			position = 5
+			position = 5,
+			closedByDefault = true
 	)
 	String HPColorSettingsSection = "HPColorSettings";
 
 	@ConfigSection(
 			name = "Prayer Colors (Stat Bars)",
 			description = "Configuration for prayer color options.",
-			position = 6
+			position = 6,
+			closedByDefault = true
 	)
 	String PrayerColorSettingsSection = "PrayerColorSettings";
 
 	@ConfigSection(
 			name = "Energy Colors (Stat Bars)",
 			description = "Configuration for prayer color options.",
-			position = 7
+			position = 7,
+			closedByDefault = true
 	)
 	String EnergyColorSettingsSection = "EnergyColorSettings";
 
 	@ConfigSection(
 			name = "Special Colors (Stat Bars)",
 			description = "Configuration for special color options.",
-			position = 8
+			position = 8,
+			closedByDefault = true
 	)
 	String SpecialColorSettingsSection = "SpecialColorSettings";
 
 	@ConfigSection(
 			name = "Combat Skill Colors (Stat Bars)",
 			description = "Configuration for combat skill color options.",
-			position = 9
+			position = 9,
+			closedByDefault = true
 	)
 	String CombatColorSettingsSection = "CombatColorSettings";
 
 	@ConfigSection(
 			name = "Skill Colors (Stat Bars)",
 			description = "Configuration for skill color options.",
-			position = 10
+			position = 10,
+			closedByDefault = true
 	)
 	String SkillColorSettingsSection = "SkillColorSettings";
 
@@ -206,7 +215,7 @@ public interface LiteRegenMeterConfig extends Config
 			keyName = "notifyBeforeHpRegenDuration",
 			name = "HP Regen Notification",
 			description = "Sets a notification time (in seconds) before the next hitpoint regeneration occurs. A value of 0 disables notifications.",
-			position = 0,
+			position = 5,
 			section = RegenMeterSettingsSection
 	)
 	@Units(Units.SECONDS)
@@ -218,7 +227,7 @@ public interface LiteRegenMeterConfig extends Config
 			keyName = "showBackdrops",
 			name = "Show Backdrops",
 			description = "Enables or disables the display of the backdrop behind the regeneration meters.",
-			position = 1,
+			position = 0,
 			section = RegenMeterSettingsSection
 	)
 	default boolean showBackdrops()
@@ -229,7 +238,7 @@ public interface LiteRegenMeterConfig extends Config
 			keyName = "lineThickness",
 			name = "Line Thickness",
 			description = "Sets the thickness of the regeneration meters.",
-			position = 2,
+			position = 1,
 			section = RegenMeterSettingsSection
 	)
 	@Units(Units.PIXELS)
@@ -240,17 +249,17 @@ public interface LiteRegenMeterConfig extends Config
 			keyName = "barWidth",
 			name = "Bar Width",
 			description = "Choose the width of the regeneration meters.",
-			position = 3,
+			position = 4,
 			section = RegenMeterSettingsSection
 	)
 	default BarWidth getBarWidth() {
-		return BarWidth.NORMAL; // Default width
+		return BarWidth.WIDER; // Default width
 	}
 	@ConfigItem(
 			keyName = "barXPosition",
 			name = "Meter Position",
 			description = "Choose the position of the regeneration meters.",
-			position = 4,
+			position = 3,
 			section = RegenMeterSettingsSection
 	)
 	default BarXPosition barXPosition() {
@@ -260,15 +269,15 @@ public interface LiteRegenMeterConfig extends Config
 			keyName = "barYPosition",
 			name = "Meter Attach",
 			description = "Choose to attach or detach the regeneration meters.",
-			position = 5,
+			position = 2,
 			section = RegenMeterSettingsSection
 	)
 	default BarYPosition barYPosition() {
-		return BarYPosition.ATTACHED; // Default position
+		return BarYPosition.DETACHED; // Default position
 	}
 
 	@ConfigItem(
-			position = 1,
+			position = 3,
 			keyName = "enableRestorationBars",
 			name = "Restoration Amount",
 			description = "Visually shows how much will be restored to your status bar.",
@@ -279,7 +288,7 @@ public interface LiteRegenMeterConfig extends Config
 		return true;
 	}
 	@ConfigItem(
-			position = 2,
+			position = 4,
 			keyName = "enableCounter",
 			name = "Numeric Counters",
 			description = "Shows current value of the status on the bar.",
@@ -290,7 +299,7 @@ public interface LiteRegenMeterConfig extends Config
 		return false;
 	}
 	@ConfigItem(
-			position = 3,
+			position = 5,
 			keyName = "enableSkillIcon",
 			name = "Icons",
 			description = "Adds skill icons at the top of the bars.",
@@ -301,24 +310,23 @@ public interface LiteRegenMeterConfig extends Config
 		return true;
 	}
 	@ConfigItem(
-			position = 4,
+			position = 2,
 			keyName = "hideAfterCombatDelay",
 			name = "Hide After",
-			description = "Amount of ticks before hiding status bars after combat. 0 = always show status bars.",
+			description = "(0 = always show) Amount of ticks before hiding status bars after combat.",
 			section = MainSettingsSection
 	)
 	@Units(Units.TICKS)
 	default int hideAfterCombatDelay()
 	{
-		return 0;
+		return 16;
 	}
-
 	@Range(
 			min = LiteStatBarsRenderer.MIN_WIDTH,
 			max = LiteStatBarsRenderer.MAX_WIDTH
 	)
 	@ConfigItem(
-			position = 5,
+			position = 1,
 			keyName = "barWidth",
 			name = "Width (resize/modern)",
 			description = "The width of the status bars in the modern resizeable layout.",
@@ -328,13 +336,12 @@ public interface LiteRegenMeterConfig extends Config
 	{
 		return LiteStatBarsRenderer.DEFAULT_WIDTH;
 	}
-
 	@Range(
 			min = LiteStatBarsRenderer.MIN_OPACITY,
 			max = LiteStatBarsRenderer.MAX_OPACITY
 	)
 	@ConfigItem(
-			position = 6,
+			position = 0,
 			keyName = "barTransparency",
 			name = "Transparency (%)",
 			description = "Set the transparency of the status bars (0 - opaque, 100 - transparent).",
