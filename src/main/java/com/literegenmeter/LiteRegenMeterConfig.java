@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2024, Smoke (Smoked today) <https://github.com/Varietyz>
  * Copyright (c) 2018 Abex
  * All rights reserved.
  *
