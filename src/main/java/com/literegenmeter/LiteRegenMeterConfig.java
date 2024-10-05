@@ -327,12 +327,12 @@ public interface LiteRegenMeterConfig extends Config
 	)
 	@ConfigItem(
 			position = 1,
-			keyName = "barWidth",
+			keyName = "statbarWidth",
 			name = "Width (resize/modern)",
 			description = "The width of the status bars in the modern resizeable layout.",
 			section = MainSettingsSection
 	)
-	default int barWidth()
+	default int statbarWidth()
 	{
 		return LiteStatBarsRenderer.DEFAULT_WIDTH;
 	}

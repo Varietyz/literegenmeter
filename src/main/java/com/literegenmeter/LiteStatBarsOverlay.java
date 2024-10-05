@@ -466,7 +466,7 @@ class LiteStatBarsOverlay extends Overlay
 		// Adjust for viewport size and offsets
 		if (curViewport == Viewport.RESIZED_BOTTOM)
 		{
-			width = config.barWidth();
+			width = config.statbarWidth();
 			height = RESIZED_BOTTOM_HEIGHT;
 			final int barWidthOffset = width - LiteStatBarsRenderer.DEFAULT_WIDTH;
 			offsetLeftBarX = (location.getX() + RESIZED_BOTTOM_OFFSET_X - offsetLeft.getX() - 2 * barWidthOffset);
