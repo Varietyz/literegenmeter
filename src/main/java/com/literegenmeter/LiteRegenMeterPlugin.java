@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2024, Smoke (Smoked today) <https://github.com/Varietyz>
  * Copyright (c) 2019, Sean Dewar <https://github.com/seandewar>
+ * Copyright (c) 2018, Hydrox6 <ikada@protonmail.ch>
  * Copyright (c) 2018, Abex
  * Copyright (c) 2018, Zimaya <https://github.com/Zimaya>
  * Copyright (c) 2018, Jos <Malevolentdev@gmail.com>
@@ -43,6 +44,7 @@ import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.game.AlternateSprites;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.SpriteManager;
 import net.runelite.client.plugins.Plugin;
@@ -50,26 +52,48 @@ import net.runelite.client.plugins.PluginDependency;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.itemstats.ItemStatPlugin;
 import com.literegenmeter.orbmeters.*;
+import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
+import net.runelite.client.util.ColorUtil;
+import net.runelite.client.util.ImageUtil;
 import net.runelite.http.api.item.ItemStats;
 import org.apache.commons.lang3.ArrayUtils;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 @PluginDescriptor(
 	name = "LITE Regen Meter",
-	description = "Track Regen timers and display status orbs for any skill, adjusted to work with the RuneLITE theme by Smoke (Smoked today).",
-	tags = {"combat", "health", "hitpoints", "special", "attack", "overlay", "notifications", "runelite", "theme", "smoke", "varietyz", "orb", "bar", "status", "calculate", "dose", "prayer", "skilling"}
+	description = "Track and show the hitpoints and special attack regeneration timers + more, adjusted to work with the RuneLITE theme by Smoke (Smoked today).",
+	tags = {"combat", "health", "hitpoints", "special", "attack", "overlay", "notifications", "runelite", "theme", "smoke", "varietyz", "orb", "bar", "poison", "venom", "disease", "heart"}
 )
 @PluginDependency(ItemStatPlugin.class)
 public class LiteRegenMeterPlugin extends Plugin
 {
+	static final int POISON_TICK_MILLIS = 18200;
+	static final int VENOM_THRESHOLD = 1000000;
+	static final int VENOM_MAXIUMUM_DAMAGE = 20;
+
+	static final BufferedImage HEART_DISEASE;
+	static final BufferedImage HEART_POISON;
+	static final BufferedImage HEART_VENOM;
+
+	static
+	{
+		HEART_DISEASE = ImageUtil.resizeCanvas(ImageUtil.loadImageResource(AlternateSprites.class, AlternateSprites.DISEASE_HEART), 26, 26);
+		HEART_POISON = ImageUtil.resizeCanvas(ImageUtil.loadImageResource(AlternateSprites.class, AlternateSprites.POISON_HEART), 26, 26);
+		HEART_VENOM = ImageUtil.resizeCanvas(ImageUtil.loadImageResource(AlternateSprites.class, AlternateSprites.VENOM_HEART), 26, 26);
+	}
+
 	private Instant startOfLastTick = Instant.now();
 	private static final int SPEC_REGEN_TICKS = 50;
 	private static final int NORMAL_HP_REGEN_TICKS = 100;
@@ -91,6 +115,9 @@ public class LiteRegenMeterPlugin extends Plugin
 
 	@Inject
 	private LiteStatBarsOverlay statBarOverlay;
+
+	@Inject
+	private PoisonOverlay poisonOverlay;
 
 	@Inject
 	private LiteRegenMeterConfig config;
@@ -123,6 +150,14 @@ public class LiteRegenMeterPlugin extends Plugin
 	@Getter(AccessLevel.PACKAGE)
 	private boolean barsDisplayed;
 
+	@Getter
+	private int lastDamage;
+	private boolean envenomed;
+	private PoisonInfobox infobox;
+	private Instant poisonNaturalCure;
+	private Instant nextPoisonTick;
+	private BufferedImage heart;
+
 	private int ticksSinceSpecRegen;
 	private int ticksSinceHPRegen;
 	private int lastCombatActionTickCount;
@@ -139,9 +174,16 @@ public class LiteRegenMeterPlugin extends Plugin
 	protected void startUp() throws Exception
 	{
 		clientThread.invokeLater(this::checkStatusBars);
+
 		overlayManager.add(overlay);
 		overlayManager.add(statBarOverlay);
 		overlayManager.add(doseOverlay);
+		overlayManager.add(poisonOverlay);
+
+		if (client.getGameState() == GameState.LOGGED_IN)
+		{
+			clientThread.invoke(this::checkHealthIcon);
+		}
 	}
 
 	@Override
@@ -150,7 +192,22 @@ public class LiteRegenMeterPlugin extends Plugin
 		overlayManager.remove(overlay);
 		overlayManager.remove(doseOverlay);
 		overlayManager.remove(statBarOverlay);
+		overlayManager.remove(poisonOverlay);
+
 		barsDisplayed = false;
+
+		if (infobox != null)
+		{
+			infoBoxManager.removeInfoBox(infobox);
+			infobox = null;
+		}
+
+		envenomed = false;
+		lastDamage = 0;
+		poisonNaturalCure = null;
+		nextPoisonTick = null;
+
+		clientThread.invoke(this::resetHealthIcon);
 	}
 
 	@Subscribe
@@ -201,6 +258,51 @@ public class LiteRegenMeterPlugin extends Plugin
 		if (ev.getVarbitId() == Varbits.PRAYER_RAPID_HEAL)
 		{
 			ticksSinceHPRegen = 0;
+		}
+		if (ev.getVarpId() == VarPlayer.POISON)
+		{
+			final int poisonValue = ev.getValue();
+			nextPoisonTick = Instant.now().plus(Duration.of(POISON_TICK_MILLIS, ChronoUnit.MILLIS));
+
+			final int damage = nextDamage(poisonValue);
+			this.lastDamage = damage;
+
+			envenomed = poisonValue >= VENOM_THRESHOLD;
+
+			if (poisonValue < VENOM_THRESHOLD)
+			{
+				poisonNaturalCure = Instant.now().plus(Duration.of(POISON_TICK_MILLIS * poisonValue, ChronoUnit.MILLIS));
+			}
+			else
+			{
+				poisonNaturalCure = null;
+			}
+
+			if (config.showInfoboxes())
+			{
+				if (infobox != null)
+				{
+					infoBoxManager.removeInfoBox(infobox);
+					infobox = null;
+				}
+
+				if (damage > 0)
+				{
+					final BufferedImage image = getSplat(envenomed ? SpriteID.HITSPLAT_DARK_GREEN_VENOM : SpriteID.HITSPLAT_GREEN_POISON, damage);
+
+					if (image != null)
+					{
+						infobox = new PoisonInfobox(image, this);
+						infoBoxManager.addInfoBox(infobox);
+					}
+				}
+			}
+
+			checkHealthIcon();
+		}
+		else if (ev.getVarpId() == VarPlayer.DISEASE_VALUE)
+		{
+			checkHealthIcon();
 		}
 	}
 
@@ -253,6 +355,17 @@ public class LiteRegenMeterPlugin extends Plugin
 			doseOverlay.onTick();
 		}
 
+		if (!config.changeHealthIcon())
+		{
+			overlayManager.remove(poisonOverlay);
+			clientThread.invoke(this::resetHealthIcon);
+		}
+
+		if (!config.showInfoboxes())
+		{
+			infoBoxManager.removeInfoBox(infobox);
+			infobox = null;
+		}
 
 		for (PrayerType prayerType : PrayerType.values())
 		{
@@ -273,6 +386,7 @@ public class LiteRegenMeterPlugin extends Plugin
 		{
 			clientThread.invokeLater(this::checkStatusBars);
 		}
+
 	}
 
 	private void checkStatusBars()
@@ -388,7 +502,29 @@ public class LiteRegenMeterPlugin extends Plugin
 		doseOverlay.setRestoreAmount(restored);
 	}
 
+	private static int nextDamage(int poisonValue)
+	{
+		int damage;
 
+		if (poisonValue >= VENOM_THRESHOLD)
+		{
+			//Venom Damage starts at 6, and increments in twos;
+			//The VarPlayer increments in values of 1, however.
+			poisonValue -= VENOM_THRESHOLD - 3;
+			damage = poisonValue * 2;
+			//Venom Damage caps at 20, but the VarPlayer keeps increasing
+			if (damage > VENOM_MAXIUMUM_DAMAGE)
+			{
+				damage = VENOM_MAXIUMUM_DAMAGE;
+			}
+		}
+		else
+		{
+			damage = (int) Math.ceil(poisonValue / 5.0f);
+		}
+
+		return damage;
+	}
 
 	private static int getDrainEffect(Client client)
 	{
@@ -438,5 +574,138 @@ public class LiteRegenMeterPlugin extends Plugin
 		{
 			return timeLeft.format(DateTimeFormatter.ofPattern("m:ss"));
 		}
+	}
+	private BufferedImage getSplat(int id, int damage)
+	{
+		//Get a copy of the hitsplat to get a clean one each time
+		final BufferedImage rawSplat = spriteManager.getSprite(id, 0);
+		if (rawSplat == null)
+		{
+			return null;
+		}
+
+		final BufferedImage splat = new BufferedImage(
+				rawSplat.getColorModel(),
+				rawSplat.copyData(null),
+				rawSplat.getColorModel().isAlphaPremultiplied(),
+				null);
+
+		final Graphics g = splat.getGraphics();
+		g.setFont(FontManager.getRunescapeSmallFont());
+
+		// Align the text in the centre of the hitsplat
+		final FontMetrics metrics = g.getFontMetrics();
+		final String text = String.valueOf(damage);
+		final int x = (splat.getWidth() - metrics.stringWidth(text)) / 2;
+		final int y = (splat.getHeight() - metrics.getHeight()) / 2 + metrics.getAscent();
+
+		g.setColor(Color.BLACK);
+		g.drawString(String.valueOf(damage), x + 1, y + 1);
+		g.setColor(Color.WHITE);
+		g.drawString(String.valueOf(damage), x, y);
+		return splat;
+	}
+
+	private static String getFormattedTime(Instant endTime)
+	{
+		final Duration timeLeft = Duration.between(Instant.now(), endTime);
+		int seconds = (int) (timeLeft.toMillis() / 1000L);
+		int minutes = seconds / 60;
+		int secs = seconds % 60;
+
+		return String.format("%d:%02d", minutes, secs);
+	}
+
+	String createTooltip()
+	{
+		String line1 = MessageFormat.format("Next {0} damage: {1}</br>Time until damage: {2}",
+				envenomed ? "venom" : "poison", ColorUtil.wrapWithColorTag(String.valueOf(lastDamage), Color.RED), getFormattedTime(nextPoisonTick));
+		String line2 = envenomed ? "" : MessageFormat.format("</br>Time until cure: {0}", getFormattedTime(poisonNaturalCure));
+
+		return line1 + line2;
+	}
+
+	private void checkHealthIcon()
+	{
+		if (!config.changeHealthIcon())
+		{
+			return;
+		}
+
+
+		final BufferedImage newHeart;
+		final int poison = client.getVarpValue(VarPlayer.POISON);
+
+		if (poison >= VENOM_THRESHOLD)
+		{
+			newHeart = HEART_VENOM;
+		}
+		else if (poison > 0)
+		{
+			newHeart = HEART_POISON;
+		}
+		else if (client.getVarpValue(VarPlayer.DISEASE_VALUE) > 0)
+		{
+			newHeart = HEART_DISEASE;
+		}
+		else
+		{
+			resetHealthIcon();
+			return;
+		}
+
+		// Only update sprites when the heart icon actually changes
+		if (newHeart != heart)
+		{
+			heart = newHeart;
+			client.getWidgetSpriteCache().reset();
+
+			// Get the sprite pixels and create a new image with an offset
+			BufferedImage offsetHeart = new BufferedImage(newHeart.getWidth(), newHeart.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			Graphics g = offsetHeart.getGraphics();
+
+			// Draw the heart image at (10, 0) to move it 10 pixels to the left
+			g.drawImage(newHeart, -4, 0, null);
+			g.dispose();
+
+			client.getSpriteOverrides().put(SpriteID.MINIMAP_ORB_HITPOINTS_ICON, ImageUtil.getImageSpritePixels(offsetHeart, client));
+		}
+	}
+
+
+	private void resetHealthIcon() {
+		if (heart == null) {
+			return;
+		}
+
+		client.getWidgetSpriteCache().reset();
+		client.getSpriteOverrides().remove(SpriteID.MINIMAP_ORB_HITPOINTS_ICON);
+
+		// Retrieve the default heart image from the sprite manager
+		BufferedImage defaultHeart = spriteManager.getSprite(SpriteID.MINIMAP_ORB_HITPOINTS_ICON, 0);
+
+		if (defaultHeart != null) {
+			// Define the target dimensions for the image
+			int targetWidth = 26;
+			int targetHeight = 26;
+
+			// Define the image's actual dimensions
+			int imageWidth = 15;
+			int imageHeight = 14;
+
+			// Create a new buffered image with the target dimensions
+			BufferedImage resizedHeart = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
+			Graphics g = resizedHeart.getGraphics();
+
+			// Draw the heart image centered in the target dimensions with -4 offset on x-axis
+			g.drawImage(defaultHeart, (targetWidth - imageWidth) / 2 - 3,
+					(targetHeight - imageHeight) / 2, imageWidth, imageHeight, null);
+			g.dispose();
+
+			// Store the resized sprite into the sprite overrides
+			client.getSpriteOverrides().put(SpriteID.MINIMAP_ORB_HITPOINTS_ICON, ImageUtil.getImageSpritePixels(resizedHeart, client));
+		}
+
+		heart = null; // Reset the heart variable
 	}
 }

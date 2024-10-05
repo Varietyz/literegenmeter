@@ -53,15 +53,13 @@ public interface LiteRegenMeterConfig extends Config
 	@ConfigSection(
 			name = "Settings (Regen Meters)",
 			description = "Configuration for the regen meters.",
-			position = 1,
-			closedByDefault = true
+			position = 1
 	)
 	String RegenMeterSettingsSection = "RegenMeterSettings";
 	@ConfigSection(
 			name = "Settings (Stat Bars)",
 			description = "Configuration for the stat bars.",
-			position = 4,
-			closedByDefault = true
+			position = 4
 	)
 	String MainSettingsSection = "MainSettings";
 	@ConfigSection(
@@ -212,6 +210,17 @@ public interface LiteRegenMeterConfig extends Config
 	}
 
 	@ConfigItem(
+			keyName = "changeHealthIcon",
+			name = "Dynamic HP Orb",
+			description = "Configures the hp orb icon to change color for matching poisoned/diseased.",
+			section = RegenMeterSettingsSection,
+			position = 0
+	)
+	default boolean changeHealthIcon()
+	{
+		return true;
+	}
+	@ConfigItem(
 			keyName = "notifyBeforeHpRegenDuration",
 			name = "HP Regen Notification",
 			description = "Sets a notification time (in seconds) before the next hitpoint regeneration occurs. A value of 0 disables notifications.",
@@ -352,6 +361,18 @@ public interface LiteRegenMeterConfig extends Config
 		return LiteStatBarsRenderer.DEFAULT_OPACITY;
 
 	}
+	@ConfigItem(
+			keyName = "showInfoboxes",
+			name = "Show Poison Timers",
+			description = "Configures the poison/disease/venom timer infoboxes and tooltips to show.",
+			section = MainSettingsSection,
+			position = 6
+	)
+	default boolean showInfoboxes()
+	{
+		return false;
+	}
+
 
 	@Alpha
 	@ConfigItem(
