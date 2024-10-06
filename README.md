@@ -1,6 +1,6 @@
 # LITE Regen Meter (RuneLITE Pack Mod)
-[![](https://img.shields.io/endpoint?url=https://i.pluginhub.info/shields/rank/plugin/lite-regen-meter)](https://runelite.net/plugin-hub/show/lite-regen-meter)
-[![](https://img.shields.io/endpoint?url=https://i.pluginhub.info/shields/installs/plugin/lite-regen-meter)](https://runelite.net/plugin-hub/show/lite-regen-meter)
+[![](https://img.shields.io/endpoint?url=https://api.runelite.net/pluginhub/shields/rank/plugin/lite-regen-meter)](https://runelite.net/plugin-hub/show/lite-regen-meter)
+[![](https://img.shields.io/endpoint?url=https://api.runelite.net/pluginhub/shields/installs/plugin/lite-regen-meter)](https://runelite.net/plugin-hub/show/lite-regen-meter)
 
 This plugin modifies dynamic status bars and regeneration meters, ensuring compatibility with the [RuneLITE Theme by Smoke (Smoked today)](https://github.com/melkypie/resource-packs/tree/pack-RuneLITE). 
 
