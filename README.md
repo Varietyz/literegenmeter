@@ -2,28 +2,46 @@
 [![](https://img.shields.io/endpoint?url=https://api.runelite.net/pluginhub/shields/rank/plugin/lite-regen-meter)](https://runelite.net/plugin-hub/show/lite-regen-meter)
 [![](https://img.shields.io/endpoint?url=https://api.runelite.net/pluginhub/shields/installs/plugin/lite-regen-meter)](https://runelite.net/plugin-hub/show/lite-regen-meter)
 
-This plugin modifies dynamic status bars and regeneration meters, ensuring compatibility with the [RuneLITE Theme by Smoke (Smoked today)](https://github.com/melkypie/resource-packs/tree/pack-RuneLITE). 
+This plugin enhances the visual aesthetics of RuneLite by modifying status bars and regeneration meters, ensuring compatibility with the [RuneLITE Theme by Smoke](https://github.com/melkypie/resource-packs/tree/pack-RuneLITE). 
 
+It resolves visual bugs and aligns elements with the theme for a cleaner, more polished user experience.
 
-    Inside the plugin, there is a option to toggle between `Vanilla` & `RuneLITE` theme. 
-    Ensuring proper compatibility for all types of theme pack users!
-
-It aims to enhance the visual aesthetics and user experience by resolving visual bugs that occur when using the default status bars and regeneration meters.
 
 For any inquiries, feel free to contact the creator via [Discord](https://discord.gg/RQ9H9naf7E).
 
 ---
+
 ### **Info: LITE Regen Meter**
 
-- Adjusts the in-game status bars to complement the RuneLITE theme, addressing a visual indecency experienced with the default status bars.
-  
-- Adjusts the hitpoints and special attack regeneration timers to match the RuneLITE theme, resolving visual bugs that occur when using the default meters.
+- Fixes visual bugs whilest adding extra functionality, ensuring better alignment and compatibility with the RuneLITE theme.
 
+- **Poison Heart Alignment**:
+  Moves the poison/venom/disease heart to the correct location in the hitpoints orb tab. This is enabled via the 'Dynamic HP Orb' setting. 
+  - *(replaces 'Poison' Plugin)*
+
+
+- **Regen Meters**:
+  Changes the default circle-style regeneration meters to a sleek line beneath the hitpoints orb. 
+  - *(replaces 'Regeneration Meter' Plugin)*
+
+
+- **Status Bar Alignment**:
+  Adjusts the hitpoints and special attack status bars, fixing alignment issues experienced with the default setup. 
+  - *(replaces 'Status Bars' Plugin)*
+
+
+- **Customization**:
+  The plugin offers color customization options for a personalized experience.
 
 - **Instructions:**
-    1. After installation, navigate to the settings panel and search for `Status Bars` and `Regeneration Meter`.
-    2. Disable the default plugin's and enable the `LITE Regen Meter` plugin.
-    3. Customize the settings within the configuration panel to your preference.
+    1. After installation, navigate to the settings panel and disable the following native RuneLite plugins:
+        - `Poison`
+        - `Regeneration Meter`
+        - `Status Bars`
+          
+    3. Enable the `LITE Regen Meter` plugin.
+    4. Customize the settings in the configuration panel to match your preferences.
+  
   
 
 - **Example of Default Visual Bug:**
@@ -34,7 +52,7 @@ For any inquiries, feel free to contact the creator via [Discord](https://discor
 
 - **Plugin Configuration Panel:**
 
-  ![image](https://github.com/user-attachments/assets/a0be16a0-64d0-4924-ab59-9339f9ac620a)
+  ![image](https://github.com/user-attachments/assets/1d0c40e5-4faa-4e04-abf3-e0c7ad33682b)
 
 
 - **Correct Display After Setup:**
@@ -63,8 +81,4 @@ Furthermore, [RuneLite itself has been confirmed as fully compliant by Jagex](ht
 ## **Creator Tag**
 ![Smoke](https://i.ibb.co/PTYfzqB/Rune-LITE-By-Smoke.png)
 
-For additional support or questions, reach out via [Discord](https://discord.gg/varietyz).
-
----
-
-This README now merges both plugin descriptions into one, providing a seamless overview for users while retaining clarity, professionalism, and proper formatting for GitHub.
+For additional support or questions, reach out via [Discord](https://discord.gg/RQ9H9naf7E).
