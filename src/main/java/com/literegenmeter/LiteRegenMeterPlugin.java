@@ -31,16 +31,43 @@
 package com.literegenmeter;
 
 import com.google.inject.Provides;
+import java.awt.Color;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.text.MessageFormat;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import javax.annotation.Nullable;
+import javax.inject.Inject;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import net.runelite.api.*;
+import net.runelite.api.Actor;
+import net.runelite.api.Client;
+import net.runelite.api.Constants;
+import net.runelite.api.GameState;
+import net.runelite.api.InventoryID;
+import net.runelite.api.Item;
+import net.runelite.api.ItemContainer;
+import net.runelite.api.ItemID;
+import net.runelite.api.NPC;
+import net.runelite.api.Player;
+import net.runelite.api.Prayer;
+import net.runelite.api.Skill;
+import net.runelite.api.SpriteID;
+import net.runelite.api.VarPlayer;
+import net.runelite.api.Varbits;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.VarbitChanged;
 import net.runelite.client.Notifier;
 import net.runelite.client.callback.ClientThread;
+import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
@@ -59,17 +86,6 @@ import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.http.api.item.ItemStats;
 import org.apache.commons.lang3.ArrayUtils;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.text.MessageFormat;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 
 @PluginDescriptor(
 	name = "LITE Regen Meter",
@@ -93,8 +109,7 @@ public class LiteRegenMeterPlugin extends Plugin
 		HEART_POISON = ImageUtil.resizeCanvas(ImageUtil.loadImageResource(AlternateSprites.class, AlternateSprites.POISON_HEART), 26, 26);
 		HEART_VENOM = ImageUtil.resizeCanvas(ImageUtil.loadImageResource(AlternateSprites.class, AlternateSprites.VENOM_HEART), 26, 26);
 	}
-
-	private Instant startOfLastTick = Instant.now();
+	
 	private static final int SPEC_REGEN_TICKS = 50;
 	private static final int NORMAL_HP_REGEN_TICKS = 100;
 
@@ -131,6 +146,9 @@ public class LiteRegenMeterPlugin extends Plugin
 	@Getter(AccessLevel.PACKAGE)
 	@Setter(AccessLevel.PACKAGE)
 	private int prayerBonus;
+
+	@Inject
+	private ChatMessageManager chatMessageManager;
 
 	@Inject
 	private InfoBoxManager infoBoxManager;
@@ -210,12 +228,14 @@ public class LiteRegenMeterPlugin extends Plugin
 		clientThread.invoke(this::resetHealthIcon);
 	}
 
+
+
 	@Subscribe
 	private void onGameStateChanged(GameStateChanged ev)
 	{
 		if (ev.getGameState() == GameState.HOPPING || ev.getGameState() == GameState.LOGIN_SCREEN)
 		{
-			ticksSinceHPRegen = -2; // For some reason this makes this accurate
+			ticksSinceHPRegen = -2;
 			ticksSinceSpecRegen = 0;
 		}
 	}
@@ -246,8 +266,6 @@ public class LiteRegenMeterPlugin extends Plugin
 			return;
 		}
 
-		// Lightbearer switch preserves time until next spec regen if <25 ticks remain
-		// If unequipping Lightbearer, this will always evaluate to 0
 		ticksSinceSpecRegen = Math.max(0, ticksSinceSpecRegen - 25);
 		wearingLightbearer = hasLightbearer;
 	}
@@ -314,7 +332,6 @@ public class LiteRegenMeterPlugin extends Plugin
 
 		if (client.getVarpValue(VarPlayer.SPECIAL_ATTACK_PERCENT) == 1000)
 		{
-			// The recharge doesn't tick when at 100%
 			ticksSinceSpecRegen = 0;
 		}
 		else
@@ -341,7 +358,6 @@ public class LiteRegenMeterPlugin extends Plugin
 		}
 		else if (currentHP > maxHP)
 		{
-			// Show it going down
 			hitpointsPercentage = 1 - hitpointsPercentage;
 		}
 
@@ -355,7 +371,7 @@ public class LiteRegenMeterPlugin extends Plugin
 			doseOverlay.onTick();
 		}
 
-		if (!config.changeHealthIcon())
+		if (!config.poisonIcon())
 		{
 			overlayManager.remove(poisonOverlay);
 			clientThread.invoke(this::resetHealthIcon);
@@ -386,11 +402,19 @@ public class LiteRegenMeterPlugin extends Plugin
 		{
 			clientThread.invokeLater(this::checkStatusBars);
 		}
-
+		if (LiteRegenMeterConfig.GROUP.equals(event.getGroup()) && event.getKey().equals("enableStatBars"))
+		{
+			clientThread.invokeLater(this::checkStatusBars);
+		}
 	}
 
 	private void checkStatusBars()
 	{
+		if (!config.enableStatBars())
+		{
+			barsDisplayed = false;
+			return;
+		}
 		final Player localPlayer = client.getLocalPlayer();
 		if (localPlayer == null)
 		{
@@ -398,7 +422,6 @@ public class LiteRegenMeterPlugin extends Plugin
 		}
 
 		final Actor interacting = localPlayer.getInteracting();
-
 		if (config.hideAfterCombatDelay() == 0)
 		{
 			barsDisplayed = true;
@@ -417,7 +440,6 @@ public class LiteRegenMeterPlugin extends Plugin
 
 	private boolean shouldNotifyHpRegenThisTick(int ticksPerHPRegen)
 	{
-		// if the configured duration lies between two ticks, choose the earlier tick
 		final int ticksBeforeHPRegen = ticksPerHPRegen - ticksSinceHPRegen;
 		final int notifyTick = (int) Math.ceil(config.getNotifyBeforeHpRegenSeconds() * 1000d / Constants.GAME_TICK_LENGTH);
 		return ticksBeforeHPRegen == notifyTick;
@@ -467,7 +489,6 @@ public class LiteRegenMeterPlugin extends Plugin
 			}
 		}
 
-		// Some items providing the holy wrench bonus can also be worn
 		if (!hasWrench && equip != null)
 		{
 			for (Item item : equip.getItems())
@@ -481,9 +502,6 @@ public class LiteRegenMeterPlugin extends Plugin
 			}
 		}
 
-		// Prayer potion: floor(7 + 25% of base level) - 27% with holy wrench
-		// Super restore: floor(8 + 25% of base level) - 27% with holy wrench
-		// Sanfew serum: floor(4 + 30% of base level) - 32% with holy wrench
 		final int prayerLevel = client.getRealSkillLevel(Skill.PRAYER);
 		int restored = 0;
 		if (hasSanfew)
@@ -508,11 +526,8 @@ public class LiteRegenMeterPlugin extends Plugin
 
 		if (poisonValue >= VENOM_THRESHOLD)
 		{
-			//Venom Damage starts at 6, and increments in twos;
-			//The VarPlayer increments in values of 1, however.
 			poisonValue -= VENOM_THRESHOLD - 3;
 			damage = poisonValue * 2;
-			//Venom Damage caps at 20, but the VarPlayer keeps increasing
 			if (damage > VENOM_MAXIUMUM_DAMAGE)
 			{
 				damage = VENOM_MAXIUMUM_DAMAGE;
@@ -550,12 +565,9 @@ public class LiteRegenMeterPlugin extends Plugin
 			return "N/A";
 		}
 
-		// Calculate how many seconds each prayer points last so the prayer bonus can be applied
-		// https://oldschool.runescape.wiki/w/Prayer#Prayer_drain_mechanics
 		final int drainResistance = 2 * prayerBonus + 60;
 		final double secondsPerPoint = 0.6 * ((double) drainResistance / drainEffect);
 
-		// Calculate the number of seconds left
 		final int currentPrayer = client.getBoostedSkillLevel(Skill.PRAYER);
 		final double secondsLeft = (currentPrayer * secondsPerPoint);
 
@@ -577,7 +589,6 @@ public class LiteRegenMeterPlugin extends Plugin
 	}
 	private BufferedImage getSplat(int id, int damage)
 	{
-		//Get a copy of the hitsplat to get a clean one each time
 		final BufferedImage rawSplat = spriteManager.getSprite(id, 0);
 		if (rawSplat == null)
 		{
@@ -593,7 +604,6 @@ public class LiteRegenMeterPlugin extends Plugin
 		final Graphics g = splat.getGraphics();
 		g.setFont(FontManager.getRunescapeSmallFont());
 
-		// Align the text in the centre of the hitsplat
 		final FontMetrics metrics = g.getFontMetrics();
 		final String text = String.valueOf(damage);
 		final int x = (splat.getWidth() - metrics.stringWidth(text)) / 2;
@@ -627,12 +637,6 @@ public class LiteRegenMeterPlugin extends Plugin
 
 	private void checkHealthIcon()
 	{
-		if (!config.changeHealthIcon())
-		{
-			return;
-		}
-
-
 		final BufferedImage newHeart;
 		final int poison = client.getVarpValue(VarPlayer.POISON);
 
@@ -654,18 +658,21 @@ public class LiteRegenMeterPlugin extends Plugin
 			return;
 		}
 
-		// Only update sprites when the heart icon actually changes
 		if (newHeart != heart)
 		{
 			heart = newHeart;
 			client.getWidgetSpriteCache().reset();
 
-			// Get the sprite pixels and create a new image with an offset
 			BufferedImage offsetHeart = new BufferedImage(newHeart.getWidth(), newHeart.getHeight(), BufferedImage.TYPE_INT_ARGB);
 			Graphics g = offsetHeart.getGraphics();
 
-			// Draw the heart image at (10, 0) to move it 10 pixels to the left
-			g.drawImage(newHeart, -4, 0, null);
+			LiteRegenMeterConfig.PackMode mode = config.packMode();
+			if (mode == LiteRegenMeterConfig.PackMode.VANILLA)
+			{
+				g.drawImage(newHeart, 0, 0, null);
+			} else {
+				g.drawImage(newHeart, -4, 0, null);
+			}
 			g.dispose();
 
 			client.getSpriteOverrides().put(SpriteID.MINIMAP_ORB_HITPOINTS_ICON, ImageUtil.getImageSpritePixels(offsetHeart, client));
@@ -681,31 +688,32 @@ public class LiteRegenMeterPlugin extends Plugin
 		client.getWidgetSpriteCache().reset();
 		client.getSpriteOverrides().remove(SpriteID.MINIMAP_ORB_HITPOINTS_ICON);
 
-		// Retrieve the default heart image from the sprite manager
 		BufferedImage defaultHeart = spriteManager.getSprite(SpriteID.MINIMAP_ORB_HITPOINTS_ICON, 0);
 
 		if (defaultHeart != null) {
-			// Define the target dimensions for the image
 			int targetWidth = 26;
 			int targetHeight = 26;
 
-			// Define the image's actual dimensions
 			int imageWidth = 15;
 			int imageHeight = 14;
 
-			// Create a new buffered image with the target dimensions
 			BufferedImage resizedHeart = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
 			Graphics g = resizedHeart.getGraphics();
 
-			// Draw the heart image centered in the target dimensions with -4 offset on x-axis
-			g.drawImage(defaultHeart, (targetWidth - imageWidth) / 2 - 3,
+			LiteRegenMeterConfig.PackMode mode = config.packMode();
+			if (mode == LiteRegenMeterConfig.PackMode.VANILLA)
+			{
+				g.drawImage(defaultHeart, (targetWidth - imageWidth) / 2,
 					(targetHeight - imageHeight) / 2, imageWidth, imageHeight, null);
+			} else {
+				g.drawImage(defaultHeart, (targetWidth - imageWidth) / 2 - 3,
+					(targetHeight - imageHeight) / 2, imageWidth, imageHeight, null);
+			}
 			g.dispose();
 
-			// Store the resized sprite into the sprite overrides
 			client.getSpriteOverrides().put(SpriteID.MINIMAP_ORB_HITPOINTS_ICON, ImageUtil.getImageSpritePixels(resizedHeart, client));
 		}
 
-		heart = null; // Reset the heart variable
+		heart = null;
 	}
 }

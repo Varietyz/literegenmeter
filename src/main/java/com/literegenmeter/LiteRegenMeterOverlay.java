@@ -25,6 +25,13 @@
  */
 package com.literegenmeter;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import javax.inject.Inject;
 import net.runelite.api.Client;
 import net.runelite.api.annotations.Component;
 import net.runelite.api.widgets.ComponentID;
@@ -34,13 +41,8 @@ import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 
-import javax.inject.Inject;
-import java.awt.*;
-
 class LiteRegenMeterOverlay extends Overlay
 {
-	private static final Color HITPOINTS_COLOR = brighter(0x9B0703);
-	private static final Color SPECIAL_COLOR = brighter(0x1E95B0);
 	private static final double DIAMETER = 26D;
 	private static final int OFFSET = 27;
 
@@ -72,14 +74,12 @@ class LiteRegenMeterOverlay extends Overlay
 
 		if (config.showHitpoints())
 		{
-			// Use user-configured color for hitpoints bar
 			Color hitpointsColor = config.getHitpointsColor();
 			renderRegen(g, ComponentID.MINIMAP_HEALTH_ORB, plugin.getHitpointsPercentage(), hitpointsColor);
 		}
 
 		if (config.showSpecial())
 		{
-			// Use user-configured color for special attack bar
 			Color specialColor = config.getSpecialColor();
 			renderRegen(g, ComponentID.MINIMAP_SPEC_ORB, plugin.getSpecialPercentage(), specialColor);
 		}
@@ -88,96 +88,89 @@ class LiteRegenMeterOverlay extends Overlay
 	}
 
 	private void renderRegen(Graphics2D g, @Component int componentId, double percent, Color color) {
+		if (!config.enableRegenMeters()) {
+			return;
+		}
+
 		Widget widget = client.getWidget(componentId);
 		if (widget == null || widget.isHidden()) {
 			return;
 		}
 		Rectangle bounds = widget.getBounds();
 
-		// Get user-configured line thickness
 		LineThickness lineThickness = config.getLineThickness();
 
-		// Get user-configured bar width
 		LiteRegenMeterConfig.BarWidth barWidthOption = config.getBarWidth();
 
-		// Set BAR_WIDTH based on user selection
 		final int BAR_WIDTH = (barWidthOption == LiteRegenMeterConfig.BarWidth.NORMAL) ? 25 : 34;
 
-		// Calculate the bar width based on percentage
-		double barWidth = BAR_WIDTH * percent; // Calculate the width based on percentage
+		double barWidth = BAR_WIDTH * percent;
 
-		// Ensure the bar width does not exceed the fixed width
 		barWidth = Math.min(barWidth, BAR_WIDTH);
 
-		// Determine bar X position based on configuration
+		LiteRegenMeterConfig.PackMode mode = config.packMode();
+		int vanillaXOffset = (mode == LiteRegenMeterConfig.PackMode.VANILLA) ? -3 : 0;
+		int vanillaYOffset = (mode == LiteRegenMeterConfig.PackMode.VANILLA) ? 2 : 0;
+
 		double barX;
 		switch (config.barXPosition()) {
 			case LEFT:
-				barX = bounds.x + OFFSET - 1 - 22; // Left config
+				barX = bounds.x + OFFSET - 1 - 22 + vanillaXOffset;
 				break;
 			case MIDDLE:
-				// Adjust barX based on the width configuration for MIDDLE
 				if (config.getBarWidth() == LiteRegenMeterConfig.BarWidth.WIDER) {
-					barX = bounds.x + OFFSET - 1 - 17; // Wider option
+					barX = bounds.x + OFFSET - 1 - 17;
 				} else {
-					barX = bounds.x + OFFSET - 1 - 12; // Normal option
+					barX = bounds.x + OFFSET - 1 - 12;
 				}
 				break;
 			case RIGHT:
-				barX = bounds.x + OFFSET - 3 - (BAR_WIDTH - 25) - 1; // Right config
+				barX = bounds.x + OFFSET - 3 - (BAR_WIDTH - 25) - 1 + vanillaXOffset;
 				break;
 			default:
-				barX = bounds.x + OFFSET - 1; // Fallback
+				barX = bounds.x + OFFSET - 1 + vanillaXOffset;
 		}
 
-
-		// Determine bar Y position based on configuration
 		double barY;
 		switch (config.barYPosition()) {
 			case DETACHED:
-				barY = bounds.y + (bounds.height / 2) + (DIAMETER / 2) - 2 + 3; // Floating
+				if (mode == LiteRegenMeterConfig.PackMode.VANILLA)
+				{
+					barY = bounds.y + (bounds.height / 2) + (DIAMETER / 2) - 2 + 1 + vanillaYOffset;
+				} else {
+					barY = bounds.y + (bounds.height / 2) + (DIAMETER / 2) - 2 + 3 + vanillaYOffset;
+				}
 				break;
 			case ATTACHED:
 			default:
-				barY = bounds.y + (bounds.height / 2) + (DIAMETER / 2) - 2 + 1; // Attached
+				barY = bounds.y + (bounds.height / 2) + (DIAMETER / 2) - 2 + 1 + vanillaYOffset;
 		}
 
-		// Create a rectangle for the bar
-		Rectangle bar = new Rectangle((int) barX, (int) barY, (int) barWidth, lineThickness.getValue()); // Set height based on user choice
+		Rectangle bar = new Rectangle((int) barX, (int) barY, (int) barWidth, lineThickness.getValue());
 
-		// Create a rectangle for the background (outer)
-		Rectangle background = new Rectangle((int) (barX - 1), (int) (barY - 1), BAR_WIDTH + 2, lineThickness.getValue() + 2); // Background width is fixed to BAR_WIDTH and add 1 pixel to top and bottom
+		Rectangle background = new Rectangle((int) (barX - 1), (int) (barY - 1), BAR_WIDTH + 2, lineThickness.getValue() + 2);
 
-		// Draw the background and the bar only if the percentage is greater than 0
 		if (percent > 0) {
 			if (config.showBackdrops()) {
-				// Draw the outer border using the default backdrop color
-				g.setColor(new Color(0x171717)); // Use the border color
-				g.fill(background); // Draw the outer background first
+				g.setColor(new Color(0x171717));
+				g.fill(background);
 			}
 
-			// Set inner backdrop height based on the line thickness
 			int innerHeight = lineThickness.getValue();
 
-			// Check if the backdrop should be drawn based on user configuration
 			if (config.showBackdrops()) {
-				// Use the user-configured backdrop color if set, otherwise use default
-				Color backdropColor = config.getBackdropColor(); // Get the backdrop color from config
+				Color backdropColor = config.getBackdropColor();
 
-				// Create a rectangle for the inner backdrop
-				Rectangle innerBackground = new Rectangle((int) (barX), (int) (barY), BAR_WIDTH, innerHeight); // Adjust position for the inner background
-				g.setColor(backdropColor); // Use the user-configured backdrop color
-				g.fill(innerBackground); // Draw the inner backdrop
+				Rectangle innerBackground = new Rectangle((int) (barX), (int) (barY), BAR_WIDTH, innerHeight);
+				g.setColor(backdropColor);
+				g.fill(innerBackground);
 			}
 
-			// Set stroke and color for drawing the bar
 			g.setStroke(new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER));
 			g.setColor(color);
 
-			// Draw the bar
 			g.fill(bar);
 		}
 	}
-
 
 }

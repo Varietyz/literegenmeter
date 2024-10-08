@@ -26,6 +26,14 @@
 
 package com.literegenmeter;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.time.Duration;
+import java.time.Instant;
+import javax.inject.Inject;
 import lombok.AccessLevel;
 import lombok.Setter;
 import net.runelite.api.Client;
@@ -36,11 +44,6 @@ import net.runelite.api.widgets.Widget;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
-
-import javax.inject.Inject;
-import java.awt.*;
-import java.time.Duration;
-import java.time.Instant;
 
 class LitePrayerDoseOverlay extends Overlay
 {
@@ -71,7 +74,7 @@ class LitePrayerDoseOverlay extends Overlay
     {
         if (trackTick)
         {
-            startOfLastTick = Instant.now(); // Reset the tick timer
+            startOfLastTick = Instant.now();
             trackTick = false;
         }
         else
@@ -108,7 +111,6 @@ class LitePrayerDoseOverlay extends Overlay
             return null;
         }
 
-        // Get user-configured bar width and line thickness
         LiteRegenMeterConfig.BarWidth barWidthOption = config.getBarWidth();
         final int BAR_WIDTH = (barWidthOption == LiteRegenMeterConfig.BarWidth.NORMAL) ? 25 : 34;
         int lineThickness = config.getLineThickness().getValue();
@@ -116,70 +118,59 @@ class LitePrayerDoseOverlay extends Overlay
         int barX;
         switch (config.barXPosition()) {
             case LEFT:
-                barX = (int) (bounds.x + OFFSET - 1 - 25); // Left config
+                barX = (int) (bounds.x + OFFSET - 1 - 25);
                 break;
             case MIDDLE:
-                // Adjust barX based on the width configuration for MIDDLE
                 if (config.getBarWidth() == LiteRegenMeterConfig.BarWidth.WIDER) {
-                    barX = (int) (bounds.x + OFFSET - 1 - 20); // Wider option
+                    barX = (int) (bounds.x + OFFSET - 1 - 20);
                 } else {
-                    barX = (int) (bounds.x + OFFSET - 1 - 15); // Normal option
+                    barX = (int) (bounds.x + OFFSET - 1 - 15);
                 }
                 break;
             case RIGHT:
-                barX = (int) (bounds.x + OFFSET - 3 - (BAR_WIDTH - 25) - 4); // Right config
+                barX = (int) (bounds.x + OFFSET - 3 - (BAR_WIDTH - 25) - 4);
                 break;
             default:
-                barX = (int) (bounds.x + OFFSET - 1); // Fallback
+                barX = (int) (bounds.x + OFFSET - 1);
         }
 
-// Determine bar Y position based on configuration
         int barY;
         switch (config.barYPosition()) {
             case DETACHED:
-                barY = (int) (bounds.y + (bounds.height / 2) + (DIAMETER / 2) - 2 + 2); // Floating
+                barY = (int) (bounds.y + (bounds.height / 2) + (DIAMETER / 2) - 2 + 2);
                 break;
             case ATTACHED:
             default:
-                barY = (int) (bounds.y + (bounds.height / 2) + (DIAMETER / 2) - 2); // Attached
+                barY = (int) (bounds.y + (bounds.height / 2) + (DIAMETER / 2) - 2);
         }
 
         final long timeSinceLastTick = Duration.between(startOfLastTick, Instant.now()).toMillis();
-        final float tickProgress = Math.min(timeSinceLastTick / PULSE_TIME, 1); // Cap between 0 and 1
+        final float tickProgress = Math.min(timeSinceLastTick / PULSE_TIME, 1);
 
-        // Calculate the flashing effect for visibility
-        float flash = (float) Math.sin(tickProgress * Math.PI * 2); // Flashing effect using sine wave
-        float alpha = Math.max(0, 0.5f + 0.5f * flash); // Alpha value ranging from 0 to 1
+        float flash = (float) Math.sin(tickProgress * Math.PI * 2);
+        float alpha = Math.max(0, 0.5f + 0.5f * flash);
 
-        // Create a color for the bar that maintains its original RGB values but adjusts alpha
         Color barColor = config.prayerDoseOrbStartColor();
-        Color flashingColor = new Color(barColor.getRed(), barColor.getGreen(), barColor.getBlue(), (int) (alpha * 255)); // Adjust alpha for fill
+        Color flashingColor = new Color(barColor.getRed(), barColor.getGreen(), barColor.getBlue(), (int) (alpha * 255));
 
-        Color outlineColor = new Color(0x171717); // Dark gray outline color
-        Color flashingOutlineColor = new Color(outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), (int) (alpha * 255)); // Adjust alpha for outline
+        Color outlineColor = new Color(0x171717);
+        Color flashingOutlineColor = new Color(outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), (int) (alpha * 255));
 
+        double fixedBarWidth = BAR_WIDTH;
 
-        // Fixed bar width based on configuration
-        double fixedBarWidth = BAR_WIDTH; // Keep fixed width
+        Rectangle bar = new Rectangle(barX, barY, (int) fixedBarWidth, lineThickness);
 
-        // Create a rectangle for the bar
-        Rectangle bar = new Rectangle(barX, barY, (int) fixedBarWidth, lineThickness); // Create the bar
+        Rectangle background = new Rectangle(barX - 1, barY - 1, (int) fixedBarWidth + 2, lineThickness + 2);
 
-        // Draw the background (outer)
-        Rectangle background = new Rectangle(barX - 1, barY - 1, (int) fixedBarWidth + 2, lineThickness + 2); // Background width is fixed to BAR_WIDTH + 2 for the outline
-
-        // Fill the entire background with the outline color
         graphics.setColor(flashingOutlineColor);
-        graphics.fill(background); // Draw the outer background first
+        graphics.fill(background);
 
-        // Fill the entire bar with the flashing color
         graphics.setColor(flashingColor);
-        graphics.fill(bar); // Fill the bar with flashing color
+        graphics.fill(bar);
 
-        // Draw the outline with the flashing outline color
         graphics.setStroke(new BasicStroke(1));
-        graphics.setColor(flashingOutlineColor); // Set outline color to flashing
-        graphics.drawRect(barX - 1, barY - 1, (int) fixedBarWidth + 1, lineThickness + 1); // Draw outline
+        graphics.setColor(flashingOutlineColor);
+        graphics.drawRect(barX - 1, barY - 1, (int) fixedBarWidth + 1, lineThickness + 1);
 
         return null;
     }

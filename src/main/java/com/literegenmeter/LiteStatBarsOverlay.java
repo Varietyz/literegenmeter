@@ -26,8 +26,23 @@
  */
 package com.literegenmeter;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.util.EnumMap;
+import java.util.Map;
+import javax.inject.Inject;
+import net.runelite.api.Client;
+import net.runelite.api.Experience;
+import net.runelite.api.MenuEntry;
 import net.runelite.api.Point;
-import net.runelite.api.*;
+import net.runelite.api.Prayer;
+import net.runelite.api.Skill;
+import net.runelite.api.SpriteID;
+import net.runelite.api.VarPlayer;
+import net.runelite.api.Varbits;
 import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.game.AlternateSprites;
@@ -42,12 +57,6 @@ import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.util.ImageUtil;
-
-import javax.inject.Inject;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.util.EnumMap;
-import java.util.Map;
 
 class LiteStatBarsOverlay extends Overlay
 {
@@ -425,7 +434,6 @@ class LiteStatBarsOverlay extends Overlay
 		));
 	}
 
-
 	@Override
 	public Dimension render(Graphics2D g)
 	{
@@ -456,101 +464,92 @@ class LiteStatBarsOverlay extends Overlay
 		final Point offsetLeft = curViewport.getOffsetLeft();
 		final Point offsetRight = curViewport.getOffsetRight();
 		final Point location = curWidget.getCanvasLocation();
-		final int width;
-		final int height;
-		final int offsetLeftBarX;
-		int offsetLeftBarY;
-		final int offsetRightBarX;
-		int offsetRightBarY;
 
-		// Adjust for viewport size and offsets
-		if (curViewport == Viewport.RESIZED_BOTTOM)
+		LiteRegenMeterConfig.PackMode mode = config.packMode();
+
+		int width = LiteStatBarsRenderer.DEFAULT_WIDTH;
+		int height = HEIGHT;
+
+		int offsetLeftBarX = (location.getX() - offsetLeft.getX());
+		int offsetRightBarX = (location.getX() - offsetRight.getX() + 4) + curWidget.getWidth();
+
+		int offsetLeftBarY = (location.getY() - offsetLeft.getY() - 5);
+		int offsetRightBarY = (location.getY() - offsetRight.getY() - 5);
+
+		if (mode == LiteRegenMeterConfig.PackMode.VANILLA)
 		{
-			width = config.statbarWidth();
-			height = RESIZED_BOTTOM_HEIGHT;
-			final int barWidthOffset = width - LiteStatBarsRenderer.DEFAULT_WIDTH;
-			offsetLeftBarX = (location.getX() + RESIZED_BOTTOM_OFFSET_X - offsetLeft.getX() - 2 * barWidthOffset);
-			offsetLeftBarY = (location.getY() - RESIZED_BOTTOM_OFFSET_Y - offsetLeft.getY() - 1);
-			offsetRightBarX = (location.getX() + RESIZED_BOTTOM_OFFSET_X - offsetRight.getX() - barWidthOffset);
-			offsetRightBarY = (location.getY() - RESIZED_BOTTOM_OFFSET_Y - offsetRight.getY() - 1);
-		}
-		else
-		{
-			width = LiteStatBarsRenderer.DEFAULT_WIDTH;
-			height = HEIGHT;
-			offsetLeftBarX = (location.getX() - offsetLeft.getX());
-			offsetLeftBarY = (location.getY() - offsetLeft.getY() - 5);
-			offsetRightBarX = (location.getX() - offsetRight.getX() + 4) + curWidget.getWidth();
-			offsetRightBarY = (location.getY() - offsetRight.getY() - 5);
+			height -= 6;
+
+			offsetLeftBarY = (location.getY() - offsetLeft.getY());
+			offsetRightBarY = (location.getY() - offsetRight.getY());
+			offsetRightBarX -= 4;
+
+			width += 3;
 		}
 
-		// Build icons for rendering
 		buildIcons();
 
-		// First pair of bars
 		LiteStatBarsRenderer left = barRenderers.get(config.leftBarMode());
 		LiteStatBarsRenderer right = barRenderers.get(config.rightBarMode());
 
-// Define separate length variables for each bar
-		int leftBar1Length = height;  // Default length for Bar 1 on the left
-		int leftBar2Length = height;  // Default length for Bar 2 on the left
-		int rightBar1Length = height; // Default length for Bar 1 on the right
-		int rightBar2Length = height; // Default length for Bar 2 on the right
+		int leftBar1Length = height;
+		int leftBar2Length = height;
+		int rightBar1Length = height;
+		int rightBar2Length = height;
 
-// Check if either bar is turned OFF and adjust lengths accordingly
-		boolean isLeftBar1Off = left == null || config.leftBarMode() == LiteStatBarsMode.DISABLED; // First bar on the left
-		boolean isLeftBar2Off = barRenderers.get(config.LeftBarMode2()) == null || config.LeftBarMode2() == LiteStatBarsMode.DISABLED; // Second bar on the left
+		boolean isLeftBar1Off = left == null || config.leftBarMode() == LiteStatBarsMode.DISABLED;
+		boolean isLeftBar2Off = barRenderers.get(config.LeftBarMode2()) == null || config.LeftBarMode2() == LiteStatBarsMode.DISABLED;
 
-		boolean isRightBar1Off = right == null || config.rightBarMode() == LiteStatBarsMode.DISABLED; // First bar on the right
-		boolean isRightBar2Off = barRenderers.get(config.RightBarMode2()) == null || config.RightBarMode2() == LiteStatBarsMode.DISABLED; // Second bar on the right
+		boolean isRightBar1Off = right == null || config.rightBarMode() == LiteStatBarsMode.DISABLED;
+		boolean isRightBar2Off = barRenderers.get(config.RightBarMode2()) == null || config.RightBarMode2() == LiteStatBarsMode.DISABLED;
 
-// Resize logic for left bars
-		if (isLeftBar1Off && !isLeftBar2Off) {
-			// Bar 1 is OFF, resize Bar 2 upwards
-			offsetLeftBarY -= height; // Move Bar 2 up by its height
-			leftBar2Length = height * 2; // Double the length of Bar 2
-		} else if (isLeftBar2Off && !isLeftBar1Off) {
-			// Bar 2 is OFF, keep Bar 1 at its current length
-			leftBar1Length = height * 2; // Double the length of Bar 1
+		if (isLeftBar1Off && !isLeftBar2Off)
+		{
+			offsetLeftBarY -= height;
+			leftBar2Length = height * 2;
+		}
+		else if (isLeftBar2Off && !isLeftBar1Off)
+		{
+			leftBar1Length = height * 2;
 		}
 
-// Resize logic for right bars
-		if (isRightBar1Off && !isRightBar2Off) {
-			// Bar 1 is OFF, resize Bar 2 upwards
-			offsetRightBarY -= height; // Move Bar 2 up by its height
-			rightBar2Length = height * 2; // Double the length of Bar 2
-		} else if (isRightBar2Off && !isRightBar1Off) {
-			// Bar 2 is OFF, keep Bar 1 at its current length
-			rightBar1Length = height * 2; // Double the length of Bar 1
+		if (isRightBar1Off && !isRightBar2Off)
+		{
+			offsetRightBarY -= height;
+			rightBar2Length = height * 2;
+		}
+		else if (isRightBar2Off && !isRightBar1Off)
+		{
+			rightBar1Length = height * 2;
 		}
 
-// Render the first pair of bars using the respective lengths
-		if (left != null) {
+		if (left != null)
+		{
 			left.renderBar(config, g, offsetLeftBarX, offsetLeftBarY, width, leftBar1Length);
 		}
 
-		if (right != null) {
+		if (right != null)
+		{
 			right.renderBar(config, g, offsetRightBarX, offsetRightBarY, width, rightBar1Length);
 		}
 
-// Render the second pair of bars right underneath the first ones
-		int secondBarYOffset = height; // Offset to move the second set of bars below the first
+		int secondBarYOffset = height;
 
 		LiteStatBarsRenderer secondLeft = barRenderers.get(config.LeftBarMode2());
 		LiteStatBarsRenderer secondRight = barRenderers.get(config.RightBarMode2());
 
-// Render the second pair of bars using the respective lengths
-		if (secondLeft != null) {
+		if (secondLeft != null)
+		{
 			secondLeft.renderBar(config, g, offsetLeftBarX, offsetLeftBarY + secondBarYOffset, width, leftBar2Length);
 		}
 
-		if (secondRight != null) {
+		if (secondRight != null)
+		{
 			secondRight.renderBar(config, g, offsetRightBarX, offsetRightBarY + secondBarYOffset, width, rightBar2Length);
 		}
 
 		return null;
 	}
-
 
 	private int getRestoreValue(String skill)
 	{

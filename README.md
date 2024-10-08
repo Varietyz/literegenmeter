@@ -4,6 +4,10 @@
 
 This plugin modifies dynamic status bars and regeneration meters, ensuring compatibility with the [RuneLITE Theme by Smoke (Smoked today)](https://github.com/melkypie/resource-packs/tree/pack-RuneLITE). 
 
+
+    Inside the plugin, there is a option to toggle between `Vanilla` & `RuneLITE` theme. 
+    Ensuring proper compatibility for all types of theme pack users!
+
 It aims to enhance the visual aesthetics and user experience by resolving visual bugs that occur when using the default status bars and regeneration meters.
 
 For any inquiries, feel free to contact the creator via [Discord](https://discord.gg/RQ9H9naf7E).

@@ -26,12 +26,14 @@
  */
 package com.literegenmeter;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Point;
+import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.components.TextComponent;
-
-import java.awt.*;
-import java.util.function.Supplier;
 
 @RequiredArgsConstructor
 class LiteStatBarsRenderer
@@ -45,7 +47,7 @@ class LiteStatBarsRenderer
 	static final int DEFAULT_WIDTH = 17;
 	static final int MIN_WIDTH = 3;
 	static final int MAX_WIDTH = 40;
-	static final int DEFAULT_OPACITY = 0;
+	static final int DEFAULT_OPACITY = 65;
 	static final int MIN_OPACITY = 0;
 	static final int MAX_OPACITY = 100;
 	private final Supplier<Integer> maxValueSupplier;
@@ -78,22 +80,17 @@ class LiteStatBarsRenderer
 		final Color fill = colorSupplier.get();
 		refreshSkills();
 
-		// Get the configured transparency
 		int transparency = config.barTransparency();
 		int alpha = (int) ((1 - (transparency / 100.0)) * 255);
 
-		// Set the background color with transparency
 		Color backgroundColorWithTransparency = new Color(BACKGROUND.getRed(), BACKGROUND.getGreen(), BACKGROUND.getBlue(), alpha);
 		graphics.setColor(backgroundColorWithTransparency);
 
-		// Draw the background
 		graphics.drawRect(x, y, width - BORDER_SIZE, height - BORDER_SIZE);
 		graphics.fillRect(x, y, width, height);
 
-		// Create fill color with transparency
 		Color fillColorWithTransparency = new Color(fill.getRed(), fill.getGreen(), fill.getBlue(), alpha);
 
-		// Draw the filled bar with transparency
 		graphics.setColor(fillColorWithTransparency);
 		graphics.fillRect(x + BORDER_SIZE,
 				y + BORDER_SIZE + (height - filledHeight),
@@ -114,7 +111,6 @@ class LiteStatBarsRenderer
 
 	private void renderIconsAndCounters(LiteRegenMeterConfig config, Graphics2D graphics, int x, int y, int width)
 	{
-		// Icons and counters overlap the bar at small widths, so they are not drawn when the bars are too small
 		if (width < MIN_ICON_AND_COUNTER_WIDTH)
 		{
 			return;

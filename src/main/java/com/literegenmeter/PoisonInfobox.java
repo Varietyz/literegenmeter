@@ -24,11 +24,10 @@
  */
 package com.literegenmeter;
 
-import net.runelite.client.ui.overlay.infobox.Timer;
-
-import java.awt.*;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.time.temporal.ChronoUnit;
+import net.runelite.client.ui.overlay.infobox.Timer;
 
 class PoisonInfobox extends Timer
 {

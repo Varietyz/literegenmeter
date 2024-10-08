@@ -26,11 +26,16 @@
  */
 package com.literegenmeter;
 
-import net.runelite.client.config.*;
+import java.awt.Color;
+import net.runelite.client.config.Alpha;
+import net.runelite.client.config.Config;
+import net.runelite.client.config.ConfigGroup;
+import net.runelite.client.config.ConfigItem;
+import net.runelite.client.config.ConfigSection;
+import net.runelite.client.config.Range;
+import net.runelite.client.config.Units;
 import com.literegenmeter.config.LiteStatBarsMode;
 import com.literegenmeter.orbmeters.LineThickness;
-
-import java.awt.*;
 
 
 @ConfigGroup("regenmeter")
@@ -39,40 +44,40 @@ public interface LiteRegenMeterConfig extends Config
 	@ConfigSection(
 			name = "Display (Regen Meters)",
 			description = "Choose to display the regen meters.",
-			position = 0
+			position = 3
 	)
 	String RegenMeterDisplaySettingsSection = "RegenMeterDisplaySettings";
 
 	@ConfigSection(
 			name = "Display (Stat Bars)",
 			description = "Choose to display the stat bars.",
-			position = 3
+			position = 6
 	)
 	String MainBarSettingsSection = "MainBarSettings";
 
 	@ConfigSection(
 			name = "Settings (Regen Meters)",
 			description = "Configuration for the regen meters.",
-			position = 1
+			position = 4
 	)
 	String RegenMeterSettingsSection = "RegenMeterSettings";
 	@ConfigSection(
 			name = "Settings (Stat Bars)",
 			description = "Configuration for the stat bars.",
-			position = 4
+			position = 7
 	)
 	String MainSettingsSection = "MainSettings";
 	@ConfigSection(
 			name = "Colors (Regen Meters)",
 			description = "Setup the colors for the regen meters.",
-			position = 2,
+			position = 5,
 			closedByDefault = true
 	)
 	String RegenMeterColorSettingsSection = "RegenMeterColorSettings";
 	@ConfigSection(
 			name = "HP Colors (Stat Bars)",
 			description = "Configuration for health color options.",
-			position = 5,
+			position = 8,
 			closedByDefault = true
 	)
 	String HPColorSettingsSection = "HPColorSettings";
@@ -80,7 +85,7 @@ public interface LiteRegenMeterConfig extends Config
 	@ConfigSection(
 			name = "Prayer Colors (Stat Bars)",
 			description = "Configuration for prayer color options.",
-			position = 6,
+			position = 9,
 			closedByDefault = true
 	)
 	String PrayerColorSettingsSection = "PrayerColorSettings";
@@ -88,7 +93,7 @@ public interface LiteRegenMeterConfig extends Config
 	@ConfigSection(
 			name = "Energy Colors (Stat Bars)",
 			description = "Configuration for prayer color options.",
-			position = 7,
+			position = 10,
 			closedByDefault = true
 	)
 	String EnergyColorSettingsSection = "EnergyColorSettings";
@@ -96,7 +101,7 @@ public interface LiteRegenMeterConfig extends Config
 	@ConfigSection(
 			name = "Special Colors (Stat Bars)",
 			description = "Configuration for special color options.",
-			position = 8,
+			position = 11,
 			closedByDefault = true
 	)
 	String SpecialColorSettingsSection = "SpecialColorSettings";
@@ -104,7 +109,7 @@ public interface LiteRegenMeterConfig extends Config
 	@ConfigSection(
 			name = "Combat Skill Colors (Stat Bars)",
 			description = "Configuration for combat skill color options.",
-			position = 9,
+			position = 12,
 			closedByDefault = true
 	)
 	String CombatColorSettingsSection = "CombatColorSettings";
@@ -112,7 +117,7 @@ public interface LiteRegenMeterConfig extends Config
 	@ConfigSection(
 			name = "Skill Colors (Stat Bars)",
 			description = "Configuration for skill color options.",
-			position = 10,
+			position = 11,
 			closedByDefault = true
 	)
 	String SkillColorSettingsSection = "SkillColorSettings";
@@ -210,13 +215,13 @@ public interface LiteRegenMeterConfig extends Config
 	}
 
 	@ConfigItem(
-			keyName = "changeHealthIcon",
-			name = "Dynamic HP Orb",
+			keyName = "poisonIcon",
+			name = "Poison Icon",
 			description = "Configures the hp orb icon to change color for matching poisoned/diseased.",
 			section = RegenMeterSettingsSection,
 			position = 0
 	)
-	default boolean changeHealthIcon()
+	default boolean poisonIcon()
 	{
 		return true;
 	}
@@ -276,7 +281,7 @@ public interface LiteRegenMeterConfig extends Config
 	}
 	@ConfigItem(
 			keyName = "barYPosition",
-			name = "Meter Attach",
+			name = "Meter Attach (LITE)",
 			description = "Choose to attach or detach the regeneration meters.",
 			position = 2,
 			section = RegenMeterSettingsSection
@@ -796,6 +801,36 @@ public interface LiteRegenMeterConfig extends Config
 		return new Color(139, 69, 19);
 	}
 
+	@ConfigItem(
+		keyName = "packMode",
+		name = "Theme",
+		description = "Switch between Vanilla and RuneLITE functionality!",
+		position = 0
+	)
+	default PackMode packMode()
+	{
+		return PackMode.VANILLA;
+	}
+	@ConfigItem(
+		position = 1,
+		keyName = "enableStatBars",
+		name = "Enable Stat Bars",
+		description = "Enables/Disables status bars."
+	)
+	default boolean enableStatBars()
+	{
+		return true;
+	}
+	@ConfigItem(
+		position = 1,
+		keyName = "enableRegenMeters",
+		name = "Enable Regen Meters",
+		description = "Enables/Disables regeneration Meters."
+	)
+	default boolean enableRegenMeters()
+	{
+		return true;
+	}
 	public enum BarXPosition {
 		LEFT,
 		MIDDLE,
@@ -811,5 +846,25 @@ public interface LiteRegenMeterConfig extends Config
 		NORMAL,
 		WIDER;
 	}
+
+	public enum PackMode
+	{
+		VANILLA,
+		RUNELITE;
+
+		@Override
+		public String toString() {
+			switch (this) {
+				case VANILLA:
+					return "Vanilla";
+				case RUNELITE:
+					return "RuneLITE";
+				default:
+					return super.toString();
+			}
+		}
+	}
+
+
 
 }
