@@ -13,6 +13,8 @@ For any inquiries, feel free to contact the creator via [Discord](https://discor
 
 ### **Info: LITE Regen Meter**
 
+- Vanilla & RuneLITE theme'd UI support!
+
 - Fixes visual bugs whilest adding extra functionality, ensuring better alignment and compatibility with the RuneLITE theme.
 
 - **Poison Heart Alignment**:
@@ -33,14 +35,9 @@ For any inquiries, feel free to contact the creator via [Discord](https://discor
 - **Customization**:
   The plugin offers color customization options for a personalized experience.
 
-- **Instructions:**
-    1. After installation, navigate to the settings panel and disable the following native RuneLite plugins:
-        - `Poison`
-        - `Regeneration Meter`
-        - `Status Bars`
-          
-    3. Enable the `LITE Regen Meter` plugin.
-    4. Customize the settings in the configuration panel to match your preferences.
+- **Instructions:**          
+    1. Enable the `LITE Regen Meter` plugin.
+    2. Customize the settings in the configuration panel to match your preferences.
   
   
 
@@ -52,7 +49,7 @@ For any inquiries, feel free to contact the creator via [Discord](https://discor
 
 - **Plugin Configuration Panel:**
 
-  ![image](https://github.com/user-attachments/assets/1d0c40e5-4faa-4e04-abf3-e0c7ad33682b)
+  ![image](https://github.com/user-attachments/assets/85767836-a67a-43b2-86c2-f6123e30455e)
 
 
 - **Correct Display After Setup:**
