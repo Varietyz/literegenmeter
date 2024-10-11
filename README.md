@@ -18,7 +18,7 @@ For any inquiries, feel free to contact the creator via [Discord](https://discor
 - Fixes visual bugs whilest adding extra functionality, ensuring better alignment and compatibility with the RuneLITE theme.
 
 - **Poison Heart Alignment**:
-  Moves the poison/venom/disease heart to the correct location in the hitpoints orb tab. This is enabled via the 'Dynamic HP Orb' setting. 
+  Moves the poison/venom/disease heart to the correct location in the hitpoints orb tab. This is enabled via the 'Poison Icon' setting. 
   - *(replaces 'Poison' Plugin)*
 
 
@@ -28,7 +28,7 @@ For any inquiries, feel free to contact the creator via [Discord](https://discor
 
 
 - **Status Bar Alignment**:
-  Adjusts the hitpoints and special attack status bars, fixing alignment issues experienced with the default setup. 
+  Adjusts the status bars, fixing alignment issues experienced with the default setup + more customization options/skill assignments.
   - *(replaces 'Status Bars' Plugin)*
 
 
