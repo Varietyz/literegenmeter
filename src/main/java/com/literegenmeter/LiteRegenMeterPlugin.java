@@ -90,7 +90,8 @@ import org.apache.commons.lang3.ArrayUtils;
 @PluginDescriptor(
 	name = "LITE Regen Meter",
 	description = "Track Regen timers and display status orbs for any skill, adjusted to work with the RuneLITE theme by Smoke (Smoked today).",
-	tags = {"combat", "health", "hitpoints", "special", "attack", "overlay", "notifications", "runelite", "theme", "smoke", "varietyz", "orb", "bar", "poison", "venom", "disease", "heart", "status", "calculate", "dose", "prayer", "skilling"}
+	tags = {"combat", "health", "hitpoints", "special", "attack", "overlay", "notifications", "runelite", "theme", "smoke", "varietyz", "orb", "bar", "poison", "venom", "disease", "heart", "status", "calculate", "dose", "prayer", "skilling"},
+	conflicts = {"Regeneration Meter", "Poison", "Status Bars"}
 )
 @PluginDependency(ItemStatPlugin.class)
 public class LiteRegenMeterPlugin extends Plugin
