@@ -469,22 +469,38 @@ class LiteStatBarsOverlay extends Overlay
 
 		int width = LiteStatBarsRenderer.DEFAULT_WIDTH;
 		int height = HEIGHT;
+		int offsetLeftBarX, offsetLeftBarY, offsetRightBarX, offsetRightBarY;
 
-		int offsetLeftBarX = (location.getX() - offsetLeft.getX());
-		int offsetRightBarX = (location.getX() - offsetRight.getX() + 4) + curWidget.getWidth();
-
-		int offsetLeftBarY = (location.getY() - offsetLeft.getY() - 5);
-		int offsetRightBarY = (location.getY() - offsetRight.getY() - 5);
-
-		if (mode == LiteRegenMeterConfig.PackMode.VANILLA)
+		if (curViewport == Viewport.RESIZED_BOTTOM)
 		{
-			height -= 6;
+			width = config.statbarWidth();
+			height = RESIZED_BOTTOM_HEIGHT;
+			final int barWidthOffset = width - LiteStatBarsRenderer.DEFAULT_WIDTH;
 
-			offsetLeftBarY = (location.getY() - offsetLeft.getY());
-			offsetRightBarY = (location.getY() - offsetRight.getY());
-			offsetRightBarX -= 4;
+			offsetLeftBarX = (location.getX() + RESIZED_BOTTOM_OFFSET_X - offsetLeft.getX() - 2 * barWidthOffset) + 19;
+			offsetLeftBarY = (location.getY() - RESIZED_BOTTOM_OFFSET_Y - offsetLeft.getY());
 
-			width += 3;
+			offsetRightBarX = (location.getX() + RESIZED_BOTTOM_OFFSET_X - offsetRight.getX() - barWidthOffset) + 9;
+			offsetRightBarY = (location.getY() - RESIZED_BOTTOM_OFFSET_Y - offsetRight.getY());
+		}
+		else
+		{
+			offsetLeftBarX = (location.getX() - offsetLeft.getX());
+			offsetRightBarX = (location.getX() - offsetRight.getX() + 4) + curWidget.getWidth();
+
+			offsetLeftBarY = (location.getY() - offsetLeft.getY() - 5);
+			offsetRightBarY = (location.getY() - offsetRight.getY() - 5);
+
+			if (mode == LiteRegenMeterConfig.PackMode.VANILLA)
+			{
+				height -= 6;
+
+				offsetLeftBarY = (location.getY() - offsetLeft.getY());
+				offsetRightBarY = (location.getY() - offsetRight.getY());
+				offsetRightBarX -= 4;
+
+				width += 3;
+			}
 		}
 
 		buildIcons();
