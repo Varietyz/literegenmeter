@@ -477,16 +477,11 @@ class LiteStatBarsOverlay extends Overlay
 			height = RESIZED_BOTTOM_HEIGHT;
 			final int barWidthOffset = width - LiteStatBarsRenderer.DEFAULT_WIDTH;
 
-			offsetLeftBarX = (location.getX() + RESIZED_BOTTOM_OFFSET_X - offsetLeft.getX() - 2 * barWidthOffset) + 19;
+			offsetLeftBarX = (location.getX() + RESIZED_BOTTOM_OFFSET_X - offsetLeft.getX() - 2 * barWidthOffset) + 18;
 			offsetLeftBarY = (location.getY() - RESIZED_BOTTOM_OFFSET_Y - offsetLeft.getY());
 
-			offsetRightBarX = (location.getX() + RESIZED_BOTTOM_OFFSET_X - offsetRight.getX() - barWidthOffset) + 9;
+			offsetRightBarX = (location.getX() + RESIZED_BOTTOM_OFFSET_X - offsetRight.getX() - barWidthOffset) + 8;
 			offsetRightBarY = (location.getY() - RESIZED_BOTTOM_OFFSET_Y - offsetRight.getY());
-			if (mode == LiteRegenMeterConfig.PackMode.VANILLA)
-			{
-				offsetLeftBarX -= 2;
-				offsetRightBarX -= 2;
-			}
 		}
 		else
 		{
