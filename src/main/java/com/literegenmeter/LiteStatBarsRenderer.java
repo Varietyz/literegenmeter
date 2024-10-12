@@ -43,8 +43,8 @@ class LiteStatBarsRenderer
 	private static final int SKILL_ICON_HEIGHT = 35;
 	private static final int COUNTER_ICON_HEIGHT = 18;
 	private static final int BORDER_SIZE = 1;
-	private static final int MIN_ICON_AND_COUNTER_WIDTH = 18;
-	static final int DEFAULT_WIDTH = 18;
+	private static final int MIN_ICON_AND_COUNTER_WIDTH = 17;
+	static final int DEFAULT_WIDTH = 17;
 	static final int MIN_WIDTH = 3;
 	static final int MAX_WIDTH = 40;
 	static final int DEFAULT_OPACITY = 65;
