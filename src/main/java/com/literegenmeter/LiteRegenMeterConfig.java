@@ -117,7 +117,7 @@ public interface LiteRegenMeterConfig extends Config
 	@ConfigSection(
 			name = "Skill Colors (Stat Bars)",
 			description = "Configuration for skill color options.",
-			position = 11,
+			position = 13,
 			closedByDefault = true
 	)
 	String SkillColorSettingsSection = "SkillColorSettings";
@@ -333,7 +333,7 @@ public interface LiteRegenMeterConfig extends Config
 	@Units(Units.TICKS)
 	default int hideAfterCombatDelay()
 	{
-		return 16;
+		return 0;
 	}
 	@Range(
 			min = LiteStatBarsRenderer.MIN_WIDTH,
