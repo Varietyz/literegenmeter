@@ -592,9 +592,9 @@ class LiteStatBarsOverlay extends Overlay
 		}
 
 		if (secondRight != null) {
-			if (!isRightBar1Off) { // Only adjust if the first right bar is visible
+			if (!isRightBar1Off) {
 				secondRight.renderBar(config, g, offsetRightBarX, offsetRightBarY + secondBarYOffset - 1, width, rightBar2Length);
-			} else { // Render without adjustment if the first right bar is not visible
+			} else {
 				secondRight.renderBar(config, g, offsetRightBarX, offsetRightBarY + secondBarYOffset, width, rightBar2Length);
 			}
 		}
