@@ -473,15 +473,44 @@ class LiteStatBarsOverlay extends Overlay
 
 		if (curViewport == Viewport.RESIZED_BOTTOM)
 		{
-			width = config.statbarWidth();
-			height = RESIZED_BOTTOM_HEIGHT;
+			LiteRegenMeterConfig.LocationType locationType = config.statBarLocation();
+
+			if (locationType == LiteRegenMeterConfig.LocationType.INSIDE)
+			{
+				width = 10;
+			}
+			else
+			{
+				width = config.statbarWidth();
+			}
+
+			height = RESIZED_BOTTOM_HEIGHT + 1;
 			final int barWidthOffset = width - LiteStatBarsRenderer.DEFAULT_WIDTH;
 
-			offsetLeftBarX = (location.getX() + RESIZED_BOTTOM_OFFSET_X - offsetLeft.getX() - 2 * barWidthOffset) + 18;
-			offsetLeftBarY = (location.getY() - RESIZED_BOTTOM_OFFSET_Y - offsetLeft.getY());
+			int shift = 0;
 
-			offsetRightBarX = (location.getX() + RESIZED_BOTTOM_OFFSET_X - offsetRight.getX() - barWidthOffset) + 8;
-			offsetRightBarY = (location.getY() - RESIZED_BOTTOM_OFFSET_Y - offsetRight.getY());
+			if (locationType == LiteRegenMeterConfig.LocationType.INSIDE)
+			{
+				shift = 202;
+			}
+			else if (locationType == LiteRegenMeterConfig.LocationType.RIGHT_SIDE)
+			{
+				shift = 235;
+			}
+
+			if (locationType == LiteRegenMeterConfig.LocationType.RIGHT_SIDE)
+			{
+				offsetLeftBarX = (location.getX() + RESIZED_BOTTOM_OFFSET_X + shift - offsetLeft.getX()) + 17;
+				offsetRightBarX = (location.getX() + RESIZED_BOTTOM_OFFSET_X + shift - offsetRight.getX()) + 7 + barWidthOffset;
+			}
+			else
+			{
+				offsetLeftBarX = (location.getX() + RESIZED_BOTTOM_OFFSET_X - offsetLeft.getX() - 2 * barWidthOffset + shift) + 17;
+				offsetRightBarX = (location.getX() + RESIZED_BOTTOM_OFFSET_X - offsetRight.getX() - barWidthOffset + shift) + 7;
+			}
+
+			offsetLeftBarY = (location.getY() - RESIZED_BOTTOM_OFFSET_Y - offsetLeft.getY() - 1);
+			offsetRightBarY = (location.getY() - RESIZED_BOTTOM_OFFSET_Y - offsetRight.getY() - 1);
 		}
 		else
 		{
@@ -522,21 +551,21 @@ class LiteStatBarsOverlay extends Overlay
 		if (isLeftBar1Off && !isLeftBar2Off)
 		{
 			offsetLeftBarY -= height;
-			leftBar2Length = height * 2;
+			leftBar2Length = (height * 2) - 1;
 		}
 		else if (isLeftBar2Off && !isLeftBar1Off)
 		{
-			leftBar1Length = height * 2;
+			leftBar1Length = (height * 2) - 1;
 		}
 
 		if (isRightBar1Off && !isRightBar2Off)
 		{
 			offsetRightBarY -= height;
-			rightBar2Length = height * 2;
+			rightBar2Length = (height * 2) - 1;
 		}
 		else if (isRightBar2Off && !isRightBar1Off)
 		{
-			rightBar1Length = height * 2;
+			rightBar1Length = (height * 2) - 1;
 		}
 
 		if (left != null)
@@ -554,14 +583,20 @@ class LiteStatBarsOverlay extends Overlay
 		LiteStatBarsRenderer secondLeft = barRenderers.get(config.LeftBarMode2());
 		LiteStatBarsRenderer secondRight = barRenderers.get(config.RightBarMode2());
 
-		if (secondLeft != null)
-		{
-			secondLeft.renderBar(config, g, offsetLeftBarX, offsetLeftBarY + secondBarYOffset, width, leftBar2Length);
+		if (secondLeft != null) {
+			if (!isLeftBar1Off) {
+				secondLeft.renderBar(config, g, offsetLeftBarX, offsetLeftBarY + secondBarYOffset - 1, width, leftBar2Length);
+			} else {
+				secondLeft.renderBar(config, g, offsetLeftBarX, offsetLeftBarY + secondBarYOffset, width, leftBar2Length);
+			}
 		}
 
-		if (secondRight != null)
-		{
-			secondRight.renderBar(config, g, offsetRightBarX, offsetRightBarY + secondBarYOffset, width, rightBar2Length);
+		if (secondRight != null) {
+			if (!isRightBar1Off) { // Only adjust if the first right bar is visible
+				secondRight.renderBar(config, g, offsetRightBarX, offsetRightBarY + secondBarYOffset - 1, width, rightBar2Length);
+			} else { // Render without adjustment if the first right bar is not visible
+				secondRight.renderBar(config, g, offsetRightBarX, offsetRightBarY + secondBarYOffset, width, rightBar2Length);
+			}
 		}
 
 		return null;
