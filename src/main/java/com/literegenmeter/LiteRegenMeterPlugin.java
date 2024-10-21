@@ -649,7 +649,6 @@ public class LiteRegenMeterPlugin extends Plugin
 		int ORBS_UPDATE_HEALTH = 446;
 		if (event.getScriptId() == ORBS_UPDATE_HEALTH)
 		{
-			//keep the icon updated when hp orb script is fired
 			checkHealthIcon();
 		}
 	}
@@ -667,26 +666,25 @@ public class LiteRegenMeterPlugin extends Plugin
 		if (hpIcon != null)
 		{
 			int STATUS_ICON_ID;
-			int xOffset = 0; // Initialize xOffset
+			int xOffset;
 			boolean isVanilla = configManager.getConfiguration(LiteRegenMeterConfig.GROUP, "packMode").equals("VANILLA");
 
 			final int poison = client.getVarpValue(VarPlayer.POISON);
 
-			// Select the appropriate icon based on the mode (VANILLA or LITE)
 			if (poison >= VENOM_THRESHOLD)
 			{
 				STATUS_ICON_ID = isVanilla ? LiteRegenSprites.HEART_VENOM.getSpriteId() : LiteRegenSprites.LITE_HEART_VENOM.getSpriteId();
-				xOffset = getHealthIconXOffset(); // Apply offset for venom
+				xOffset = getHealthIconXOffset();
 			}
 			else if (poison > 0)
 			{
 				STATUS_ICON_ID = isVanilla ? LiteRegenSprites.HEART_POISON.getSpriteId() : LiteRegenSprites.LITE_HEART_POISON.getSpriteId();
-				xOffset = getHealthIconXOffset(); // Apply offset for poison
+				xOffset = getHealthIconXOffset();
 			}
 			else if (client.getVarpValue(VarPlayer.DISEASE_VALUE) > 0)
 			{
 				STATUS_ICON_ID = isVanilla ? LiteRegenSprites.HEART_DISEASE.getSpriteId() : LiteRegenSprites.LITE_HEART_DISEASE.getSpriteId();
-				xOffset = getHealthIconXOffset(); // Apply offset for disease
+				xOffset = getHealthIconXOffset();
 			}
 			else
 			{
@@ -695,7 +693,7 @@ public class LiteRegenMeterPlugin extends Plugin
 			}
 
 			hpIcon.setSpriteId(STATUS_ICON_ID);
-			hpIcon.setOriginalX(27 - xOffset); // Apply the calculated xOffset
+			hpIcon.setOriginalX(27 - xOffset);
 			hpIcon.revalidate();
 		}
 	}
@@ -708,15 +706,13 @@ public class LiteRegenMeterPlugin extends Plugin
 			if (hpIcon.getSpriteId() != HEART_SPRITE_ID)
 				hpIcon.setSpriteId(HEART_SPRITE_ID);
 
-			// No offset when Vanilla is inactive as the base health icon is already offset by 4 natively
-			hpIcon.setOriginalX(27); // No offset applied to default heart icon
+			hpIcon.setOriginalX(27);
 			hpIcon.revalidate();
 		}
 	}
 
 	private int getHealthIconXOffset()
 	{
-		// Only apply the 4-pixel offset if Vanilla is not selected
 		return configManager.getConfiguration(LiteRegenMeterConfig.GROUP, "packMode").equals("VANILLA") ? 0 : 4;
 	}
 }
