@@ -37,9 +37,11 @@ import net.runelite.client.config.Units;
 import com.literegenmeter.config.LiteStatBarsMode;
 import com.literegenmeter.orbmeters.LineThickness;
 
-@ConfigGroup("regenmeter")
+@ConfigGroup(LiteRegenMeterConfig.GROUP)
 public interface LiteRegenMeterConfig extends Config
 {
+	String GROUP = "regenmeter";
+
 	@ConfigSection(
 		name = "Display (Regen Meters)",
 		description = "Choose to display the regen meters.",
@@ -120,8 +122,6 @@ public interface LiteRegenMeterConfig extends Config
 		closedByDefault = true
 	)
 	String SkillColorSettingsSection = "SkillColorSettings";
-
-	String GROUP = "litestatbars";
 
 	@ConfigItem(
 		keyName = "showHitpoints",

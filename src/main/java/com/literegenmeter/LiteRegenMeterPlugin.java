@@ -65,13 +65,13 @@ import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.VarbitChanged;
+import net.runelite.api.widgets.Widget;
 import net.runelite.client.Notifier;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
-import net.runelite.client.game.AlternateSprites;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.SpriteManager;
 import net.runelite.client.plugins.Plugin;
@@ -83,7 +83,6 @@ import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 import net.runelite.client.util.ColorUtil;
-import net.runelite.client.util.ImageUtil;
 import net.runelite.http.api.item.ItemStats;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -99,20 +98,11 @@ public class LiteRegenMeterPlugin extends Plugin
 	static final int POISON_TICK_MILLIS = 18200;
 	static final int VENOM_THRESHOLD = 1000000;
 	static final int VENOM_MAXIUMUM_DAMAGE = 20;
-
-	static final BufferedImage HEART_DISEASE;
-	static final BufferedImage HEART_POISON;
-	static final BufferedImage HEART_VENOM;
-
-	static
-	{
-		HEART_DISEASE = ImageUtil.resizeCanvas(ImageUtil.loadImageResource(AlternateSprites.class, AlternateSprites.DISEASE_HEART), 26, 26);
-		HEART_POISON = ImageUtil.resizeCanvas(ImageUtil.loadImageResource(AlternateSprites.class, AlternateSprites.POISON_HEART), 26, 26);
-		HEART_VENOM = ImageUtil.resizeCanvas(ImageUtil.loadImageResource(AlternateSprites.class, AlternateSprites.VENOM_HEART), 26, 26);
-	}
-	
 	private static final int SPEC_REGEN_TICKS = 50;
 	private static final int NORMAL_HP_REGEN_TICKS = 100;
+
+	private int HEART_ICON_ID = 10485776;
+	private int HEART_SPRITE_ID = 1067;
 
 	@Inject
 	private Client client;
@@ -158,6 +148,9 @@ public class LiteRegenMeterPlugin extends Plugin
 	private SpriteManager spriteManager;
 
 	@Inject
+	private ConfigManager configManager;
+
+	@Inject
 	private ItemManager itemManager;
 
 	@Getter
@@ -175,7 +168,6 @@ public class LiteRegenMeterPlugin extends Plugin
 	private PoisonInfobox infobox;
 	private Instant poisonNaturalCure;
 	private Instant nextPoisonTick;
-	private BufferedImage heart;
 
 	private int ticksSinceSpecRegen;
 	private int ticksSinceHPRegen;
@@ -199,6 +191,8 @@ public class LiteRegenMeterPlugin extends Plugin
 		overlayManager.add(doseOverlay);
 		overlayManager.add(poisonOverlay);
 
+		spriteManager.addSpriteOverrides(LiteRegenSprites.values());
+
 		if (client.getGameState() == GameState.LOGGED_IN)
 		{
 			clientThread.invoke(this::checkHealthIcon);
@@ -213,6 +207,8 @@ public class LiteRegenMeterPlugin extends Plugin
 		overlayManager.remove(statBarOverlay);
 		overlayManager.remove(poisonOverlay);
 
+		spriteManager.removeSpriteOverrides(LiteRegenSprites.values());
+
 		barsDisplayed = false;
 
 		if (infobox != null)
@@ -226,10 +222,8 @@ public class LiteRegenMeterPlugin extends Plugin
 		poisonNaturalCure = null;
 		nextPoisonTick = null;
 
-		clientThread.invoke(this::resetHealthIcon);
+		clientThread.invoke(()-> resetHealthIcon(true));
 	}
-
-
 
 	@Subscribe
 	private void onGameStateChanged(GameStateChanged ev)
@@ -372,12 +366,6 @@ public class LiteRegenMeterPlugin extends Plugin
 			doseOverlay.onTick();
 		}
 
-		if (!config.poisonIcon())
-		{
-			overlayManager.remove(poisonOverlay);
-			clientThread.invoke(this::resetHealthIcon);
-		}
-
 		if (!config.showInfoboxes())
 		{
 			infoBoxManager.removeInfoBox(infobox);
@@ -399,14 +387,31 @@ public class LiteRegenMeterPlugin extends Plugin
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
-		if (LiteRegenMeterConfig.GROUP.equals(event.getGroup()) && event.getKey().equals("hideAfterCombatDelay"))
+		if (!event.getGroup().equals(LiteRegenMeterConfig.GROUP))
+		{
+			return;
+		}
+
+		if(event.getKey().equals("hideAfterCombatDelay"))
 		{
 			clientThread.invokeLater(this::checkStatusBars);
 		}
-		if (LiteRegenMeterConfig.GROUP.equals(event.getGroup()) && event.getKey().equals("enableStatBars"))
+
+		if(event.getKey().equals("enableStatBars"))
 		{
 			clientThread.invokeLater(this::checkStatusBars);
 		}
+
+		if(event.getKey().equals("poisonIcon"))
+		{
+			clientThread.invokeLater(this::checkHealthIcon);
+		}
+
+		if(event.getKey().equals("packMode"))
+		{
+			clientThread.invokeLater(this::checkHealthIcon);
+		}
+
 	}
 
 	private void checkStatusBars()
@@ -636,85 +641,73 @@ public class LiteRegenMeterPlugin extends Plugin
 		return line1 + line2;
 	}
 
+	@Subscribe
+	public void onScriptPostFired(ScriptPostFired event)
+	{
+		int ORBS_UPDATE_HEALTH = 446;
+		if (event.getScriptId() == ORBS_UPDATE_HEALTH)
+		{
+			//keep the icon updated when hp orb script is fired
+			checkHealthIcon();
+		}
+	}
+
 	private void checkHealthIcon()
 	{
-		final BufferedImage newHeart;
-		final int poison = client.getVarpValue(VarPlayer.POISON);
-
-		if (poison >= VENOM_THRESHOLD)
+		if(!config.poisonIcon())
 		{
-			newHeart = HEART_VENOM;
-		}
-		else if (poison > 0)
-		{
-			newHeart = HEART_POISON;
-		}
-		else if (client.getVarpValue(VarPlayer.DISEASE_VALUE) > 0)
-		{
-			newHeart = HEART_DISEASE;
-		}
-		else
-		{
-			resetHealthIcon();
+			resetHealthIcon(false);
 			return;
 		}
 
-		if (newHeart != heart)
+		Widget hpIcon = client.getWidget(HEART_ICON_ID);
+
+		if(hpIcon != null)
 		{
-			heart = newHeart;
-			client.getWidgetSpriteCache().reset();
+			int STATUS_ICON_ID;
+			final int poison = client.getVarpValue(VarPlayer.POISON);
 
-			BufferedImage offsetHeart = new BufferedImage(newHeart.getWidth(), newHeart.getHeight(), BufferedImage.TYPE_INT_ARGB);
-			Graphics g = offsetHeart.getGraphics();
-
-			LiteRegenMeterConfig.PackMode mode = config.packMode();
-			if (mode == LiteRegenMeterConfig.PackMode.VANILLA)
+			if (poison >= VENOM_THRESHOLD)
 			{
-				g.drawImage(newHeart, 0, 0, null);
-			} else {
-				g.drawImage(newHeart, -4, 0, null);
+				STATUS_ICON_ID = LiteRegenSprites.HEART_VENOM.getSpriteId();
 			}
-			g.dispose();
+			else if (poison > 0)
+			{
+				STATUS_ICON_ID = LiteRegenSprites.HEART_POISON.getSpriteId();
+			}
+			else if (client.getVarpValue(VarPlayer.DISEASE_VALUE) > 0)
+			{
+				STATUS_ICON_ID = LiteRegenSprites.HEART_DISEASE.getSpriteId();
+			}
+			else
+			{
+				resetHealthIcon(false);
+				return;
+			}
 
-			client.getSpriteOverrides().put(SpriteID.MINIMAP_ORB_HITPOINTS_ICON, ImageUtil.getImageSpritePixels(offsetHeart, client));
+			hpIcon.setSpriteId(STATUS_ICON_ID);
+			hpIcon.setOriginalX(27 - getHealthIconXOffset());
+			hpIcon.revalidate();
 		}
 	}
 
+	private void resetHealthIcon(boolean shutdown)
+	{
+		Widget hpIcon = client.getWidget(HEART_ICON_ID);
+		if(hpIcon != null)
+		{
+			if(hpIcon.getSpriteId() != HEART_SPRITE_ID)
+				hpIcon.setSpriteId(HEART_SPRITE_ID);
 
-	private void resetHealthIcon() {
-		if (heart == null) {
-			return;
+			//on shutdown set it back to default (0) regardless of theme
+			hpIcon.setOriginalX(27 - (shutdown ? 0 : getHealthIconXOffset()));
+			hpIcon.revalidate();
 		}
-
-		client.getWidgetSpriteCache().reset();
-		client.getSpriteOverrides().remove(SpriteID.MINIMAP_ORB_HITPOINTS_ICON);
-
-		BufferedImage defaultHeart = spriteManager.getSprite(SpriteID.MINIMAP_ORB_HITPOINTS_ICON, 0);
-
-		if (defaultHeart != null) {
-			int targetWidth = 26;
-			int targetHeight = 26;
-
-			int imageWidth = 15;
-			int imageHeight = 14;
-
-			BufferedImage resizedHeart = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
-			Graphics g = resizedHeart.getGraphics();
-
-			LiteRegenMeterConfig.PackMode mode = config.packMode();
-			if (mode == LiteRegenMeterConfig.PackMode.VANILLA)
-			{
-				g.drawImage(defaultHeart, (targetWidth - imageWidth) / 2,
-					(targetHeight - imageHeight) / 2, imageWidth, imageHeight, null);
-			} else {
-				g.drawImage(defaultHeart, (targetWidth - imageWidth) / 2 - 3,
-					(targetHeight - imageHeight) / 2, imageWidth, imageHeight, null);
-			}
-			g.dispose();
-
-			client.getSpriteOverrides().put(SpriteID.MINIMAP_ORB_HITPOINTS_ICON, ImageUtil.getImageSpritePixels(resizedHeart, client));
-		}
-
-		heart = null;
 	}
+
+	private int getHealthIconXOffset()
+	{
+		return (configManager.getConfiguration(LiteRegenMeterConfig.GROUP, "packMode").equals("VANILLA") ? 0 : 4);
+	}
+	
 }
