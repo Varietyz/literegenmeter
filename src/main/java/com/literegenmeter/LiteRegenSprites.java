@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2024, Smoke (Smoked today) <https://github.com/Varietyz>
  * Copyright (c) 2018, Tomas Slusny <slusnucky@gmail.com>
  * Copyright (c) 2018, Ron Young <https://github.com/raiyni>
  * All rights reserved.
@@ -29,17 +30,19 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.runelite.client.game.SpriteOverride;
 
+@Getter
 @RequiredArgsConstructor
 public enum LiteRegenSprites implements SpriteOverride
 {
-    HEART_POISON(-12991, "/1067-poison.png"),
-    HEART_VENOM(-12992, "/1067-venom.png"),
-    HEART_DISEASE(-12993, "/1067-disease.png");
+	HEART_POISON(-12991, "/vanilla-poison.png"),
+	HEART_VENOM(-12992, "/vanilla-venom.png"),
+	HEART_DISEASE(-12993, "/vanilla-disease.png"),
+	LITE_HEART_POISON(-12994, "/lite-poison.png"),
+	LITE_HEART_VENOM(-12995, "/lite-venom.png"),
+	LITE_HEART_DISEASE(-12996, "/lite-disease.png");
 
-    @Getter
-    private final int spriteId;
+	private final int spriteId;
 
-    @Getter
-    private final String fileName;
+	private final String fileName;
 
 }

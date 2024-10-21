@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2024, Smoke (Smoked today) <https://github.com/Varietyz>
+ * Copyright (c) 2024, Cue <https://github.com/its-cue>
  * Copyright (c) 2019, Sean Dewar <https://github.com/seandewar>
  * Copyright (c) 2018, Hydrox6 <ikada@protonmail.ch>
  * Copyright (c) 2018, Abex
@@ -655,7 +656,7 @@ public class LiteRegenMeterPlugin extends Plugin
 
 	private void checkHealthIcon()
 	{
-		if(!config.poisonIcon())
+		if (!config.poisonIcon())
 		{
 			resetHealthIcon(false);
 			return;
@@ -663,22 +664,29 @@ public class LiteRegenMeterPlugin extends Plugin
 
 		Widget hpIcon = client.getWidget(HEART_ICON_ID);
 
-		if(hpIcon != null)
+		if (hpIcon != null)
 		{
 			int STATUS_ICON_ID;
+			int xOffset = 0; // Initialize xOffset
+			boolean isVanilla = configManager.getConfiguration(LiteRegenMeterConfig.GROUP, "packMode").equals("VANILLA");
+
 			final int poison = client.getVarpValue(VarPlayer.POISON);
 
+			// Select the appropriate icon based on the mode (VANILLA or LITE)
 			if (poison >= VENOM_THRESHOLD)
 			{
-				STATUS_ICON_ID = LiteRegenSprites.HEART_VENOM.getSpriteId();
+				STATUS_ICON_ID = isVanilla ? LiteRegenSprites.HEART_VENOM.getSpriteId() : LiteRegenSprites.LITE_HEART_VENOM.getSpriteId();
+				xOffset = getHealthIconXOffset(); // Apply offset for venom
 			}
 			else if (poison > 0)
 			{
-				STATUS_ICON_ID = LiteRegenSprites.HEART_POISON.getSpriteId();
+				STATUS_ICON_ID = isVanilla ? LiteRegenSprites.HEART_POISON.getSpriteId() : LiteRegenSprites.LITE_HEART_POISON.getSpriteId();
+				xOffset = getHealthIconXOffset(); // Apply offset for poison
 			}
 			else if (client.getVarpValue(VarPlayer.DISEASE_VALUE) > 0)
 			{
-				STATUS_ICON_ID = LiteRegenSprites.HEART_DISEASE.getSpriteId();
+				STATUS_ICON_ID = isVanilla ? LiteRegenSprites.HEART_DISEASE.getSpriteId() : LiteRegenSprites.LITE_HEART_DISEASE.getSpriteId();
+				xOffset = getHealthIconXOffset(); // Apply offset for disease
 			}
 			else
 			{
@@ -687,7 +695,7 @@ public class LiteRegenMeterPlugin extends Plugin
 			}
 
 			hpIcon.setSpriteId(STATUS_ICON_ID);
-			hpIcon.setOriginalX(27 - getHealthIconXOffset());
+			hpIcon.setOriginalX(27 - xOffset); // Apply the calculated xOffset
 			hpIcon.revalidate();
 		}
 	}
@@ -695,20 +703,20 @@ public class LiteRegenMeterPlugin extends Plugin
 	private void resetHealthIcon(boolean shutdown)
 	{
 		Widget hpIcon = client.getWidget(HEART_ICON_ID);
-		if(hpIcon != null)
+		if (hpIcon != null)
 		{
-			if(hpIcon.getSpriteId() != HEART_SPRITE_ID)
+			if (hpIcon.getSpriteId() != HEART_SPRITE_ID)
 				hpIcon.setSpriteId(HEART_SPRITE_ID);
 
-			//on shutdown set it back to default (0) regardless of theme
-			hpIcon.setOriginalX(27 - (shutdown ? 0 : getHealthIconXOffset()));
+			// No offset when Vanilla is inactive as the base health icon is already offset by 4 natively
+			hpIcon.setOriginalX(27); // No offset applied to default heart icon
 			hpIcon.revalidate();
 		}
 	}
 
 	private int getHealthIconXOffset()
 	{
-		return (configManager.getConfiguration(LiteRegenMeterConfig.GROUP, "packMode").equals("VANILLA") ? 0 : 4);
+		// Only apply the 4-pixel offset if Vanilla is not selected
+		return configManager.getConfiguration(LiteRegenMeterConfig.GROUP, "packMode").equals("VANILLA") ? 0 : 4;
 	}
-	
 }
