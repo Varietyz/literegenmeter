@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2024, Smoke (Smoked today) <https://github.com/Varietyz>
- * Copyright (c) 2024, Cue <https://github.com/its-cue>
  * Copyright (c) 2019, Sean Dewar <https://github.com/seandewar>
  * Copyright (c) 2018, Hydrox6 <ikada@protonmail.ch>
  * Copyright (c) 2018, Abex
