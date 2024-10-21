@@ -1,5 +1,4 @@
 /*
- * Copyright (c) 2024, Smoke (Smoked today) <https://github.com/Varietyz>
  * Copyright (c) 2018, Tomas Slusny <slusnucky@gmail.com>
  * Copyright (c) 2018, Ron Young <https://github.com/raiyni>
  * All rights reserved.
