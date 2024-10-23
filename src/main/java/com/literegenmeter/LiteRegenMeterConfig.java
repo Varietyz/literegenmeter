@@ -40,7 +40,7 @@ import com.literegenmeter.orbmeters.LineThickness;
 @ConfigGroup(LiteRegenMeterConfig.GROUP)
 public interface LiteRegenMeterConfig extends Config
 {
-	String GROUP = "regenmeter";
+	String GROUP = "literegenmeter";
 
 	@ConfigSection(
 		name = "Display (Regen Meters)",
